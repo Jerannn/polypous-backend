@@ -1,5 +1,8 @@
 import bcrypt from "bcryptjs";
 import { randomInt } from "node:crypto";
+import AppError from "./appError.js";
+import { HTTP_STATUS } from "./constants.js";
+import { NextFunction } from "express";
 
 export const generateOTP = (): string => {
   return randomInt(100000, 1000000).toString();

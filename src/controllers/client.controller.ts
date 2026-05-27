@@ -4,6 +4,7 @@ import ClientService from "../services/client.service.js";
 import { HTTP_STATUS } from "../utils/constants.js";
 
 export const createClient = catchAsync(async (req: Request, res: Response, _next: NextFunction) => {
+  console.log(req.body);
   const newClient = await ClientService.handleCreateClient(req);
 
   res.status(HTTP_STATUS.CREATED).json({

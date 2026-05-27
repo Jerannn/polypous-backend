@@ -1,8 +1,6 @@
 import { Request } from "express";
 import ClientModel from "../models/client.model.js";
 import { CreateClientPayload } from "../types/client.types.js";
-import { LIMIT } from "../utils/constants.js";
-import { querySchema } from "../schemas/client.schema.js";
 
 export default class ClientService {
   static async handleCreateClient(req: Request) {
@@ -15,24 +13,33 @@ export default class ClientService {
 
   static async handleGetClients(req: Request) {
     const userId = req.user.id;
-    const queryParsed = querySchema.parse(req.query);
-    const { page, limit, search } = queryParsed;
 
-    const offset = (page - 1) * limit;
+    const { page, limit, search } = req.validatedQuery;
 
-    const clients = await ClientModel.findAllByUserId(userId, limit, offset, search);
+    const parsedLimit = Number(limit);
+    const parsedPage = Number(page);
+
+    const offset = (parsedPage - 1) * parsedLimit;
+
+    const clients = await ClientModel.findAllByUserId(
+      userId,
+      parsedLimit,
+      offset,
+      search as string
+    );
 
     const total = clients[0]?.totalCount ?? 0;
-    const totalPages = Math.ceil(total / limit);
+    const totalPage = Math.ceil(total / parsedLimit);
 
     return {
       meta: {
         page,
         limit,
         total,
-        totalPages,
-        nextPage: page < totalPages ? page + 1 : null,
-        prevPage: page > 1 ? page - 1 : null,
+        totalPage,
+        currentPage: parsedPage,
+        nextPage: parsedPage < totalPage ? parsedPage + 1 : null,
+        prevPage: parsedPage > 1 ? parsedPage - 1 : null,
       },
       clients,
     };

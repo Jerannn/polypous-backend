@@ -34,4 +34,4 @@ export const OTP = {
   RESET_TOKEN_EXPIRATION_TIME: 10 * 60, // 10 minutes
 } as const;
 
-export const LIMIT = 3;
+export const LIMIT = 10;
