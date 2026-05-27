@@ -13,10 +13,10 @@ export const createClient = catchAsync(async (req: Request, res: Response, _next
 });
 
 export const getClients = catchAsync(async (req: Request, res: Response, _next: NextFunction) => {
-  const clients = await ClientService.handleGetClients(req);
+  const { clients, meta } = await ClientService.handleGetClients(req);
 
   res.status(HTTP_STATUS.OK).json({
     status: "success",
-    data: { clients },
+    data: { meta, clients },
   });
 });

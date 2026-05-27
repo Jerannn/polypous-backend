@@ -2,7 +2,7 @@
 -- RESET DATABASE (DEV / STAGING ONLY)
 -- =========================================
 
--- Drop tables in dependency order
+-- Drop tables in dependency order (REMOVE THIS IN PRODUCTION)
 DROP TABLE IF EXISTS audit_logs CASCADE;
 DROP TABLE IF EXISTS invoice_status_history CASCADE;
 DROP TABLE IF EXISTS payments CASCADE;
@@ -24,6 +24,7 @@ DROP TYPE IF EXISTS subscription_status CASCADE;
 -- =========================================
 
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+CREATE EXTENSION IF NOT EXISTS "pg_trgm";
 CREATE EXTENSION IF NOT EXISTS "citext";
 
 -- =========================================
@@ -60,7 +61,7 @@ CREATE TYPE subscription_status AS ENUM (
 -- USERS
 -- =========================================
 
-CREATE TABLE users (
+CREATE TABLE IF NOT EXISTS users (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
 
   full_name VARCHAR(150) NOT NULL,
@@ -92,13 +93,13 @@ CREATE TABLE users (
   CHECK (char_length(full_name) >= 2)
 );
 
-CREATE INDEX idx_users_email ON users(email);
+CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
 
 -- =========================================
 -- CLIENTS
 -- =========================================
 
-CREATE TABLE clients (
+CREATE TABLE IF NOT EXISTS clients (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
 
   user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
@@ -115,13 +116,14 @@ CREATE TABLE clients (
   CHECK (char_length(name) >= 2)
 );
 
-CREATE INDEX idx_clients_user_id ON clients(user_id);
+CREATE INDEX IF NOT EXISTS idx_clients_user_id ON clients(user_id);
+CREATE INDEX IF NOT EXISTS idx_clients_name_trgm ON clients USING gin (name gin_trgm_ops);
 
 -- =========================================
 -- INVOICES
 -- =========================================
 
-CREATE TABLE invoices (
+CREATE TABLE IF NOT EXISTS invoices (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
 
   user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
@@ -148,16 +150,16 @@ CREATE TABLE invoices (
   CHECK (due_date >= issue_date)
 );
 
-CREATE INDEX idx_invoices_user_id ON invoices(user_id);
-CREATE INDEX idx_invoices_client_id ON invoices(client_id);
-CREATE INDEX idx_invoices_status ON invoices(status);
-CREATE INDEX idx_invoices_due_date ON invoices(due_date);
+CREATE INDEX IF NOT EXISTS idx_invoices_user_id ON invoices(user_id);
+CREATE INDEX IF NOT EXISTS idx_invoices_client_id ON invoices(client_id);
+CREATE INDEX IF NOT EXISTS idx_invoices_status ON invoices(status);
+CREATE INDEX IF NOT EXISTS idx_invoices_due_date ON invoices(due_date);
 
 -- =========================================
 -- INVOICE ITEMS
 -- =========================================
 
-CREATE TABLE invoice_items (
+CREATE TABLE IF NOT EXISTS invoice_items (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
 
   invoice_id UUID NOT NULL REFERENCES invoices(id) ON DELETE CASCADE,
@@ -172,14 +174,14 @@ CREATE TABLE invoice_items (
   created_at TIMESTAMP NOT NULL DEFAULT NOW()
 );
 
-CREATE INDEX idx_invoice_items_invoice_id
+CREATE INDEX IF NOT EXISTS idx_invoice_items_invoice_id
 ON invoice_items(invoice_id);
 
 -- =========================================
 -- PAYMENTS
 -- =========================================
 
-CREATE TABLE payments (
+CREATE TABLE IF NOT EXISTS payments (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
 
   invoice_id UUID NOT NULL REFERENCES invoices(id) ON DELETE CASCADE,
@@ -198,14 +200,14 @@ CREATE TABLE payments (
   created_at TIMESTAMP NOT NULL DEFAULT NOW()
 );
 
-CREATE INDEX idx_payments_invoice_id ON payments(invoice_id);
-CREATE INDEX idx_payments_user_id ON payments(user_id);
+CREATE INDEX IF NOT EXISTS idx_payments_invoice_id ON payments(invoice_id);
+CREATE INDEX IF NOT EXISTS idx_payments_user_id ON payments(user_id);
 
 -- =========================================
 -- INVOICE STATUS HISTORY
 -- =========================================
 
-CREATE TABLE invoice_status_history (
+CREATE TABLE IF NOT EXISTS invoice_status_history (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
 
   invoice_id UUID NOT NULL REFERENCES invoices(id) ON DELETE CASCADE,
@@ -215,14 +217,14 @@ CREATE TABLE invoice_status_history (
   changed_at TIMESTAMP NOT NULL DEFAULT NOW()
 );
 
-CREATE INDEX idx_invoice_status_history_invoice_id
+CREATE INDEX IF NOT EXISTS idx_invoice_status_history_invoice_id
 ON invoice_status_history(invoice_id);
 
 -- =========================================
 -- USER MONTHLY STATS
 -- =========================================
 
-CREATE TABLE user_monthly_stats (
+CREATE TABLE IF NOT EXISTS user_monthly_stats (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
 
   user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
@@ -240,14 +242,14 @@ CREATE TABLE user_monthly_stats (
   UNIQUE(user_id, year, month)
 );
 
-CREATE INDEX idx_user_monthly_stats_user_id
+CREATE INDEX IF NOT EXISTS idx_user_monthly_stats_user_id
 ON user_monthly_stats(user_id);
 
 -- =========================================
 -- SUBSCRIPTIONS
 -- =========================================
 
-CREATE TABLE subscriptions (
+CREATE TABLE IF NOT EXISTS subscriptions (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
 
   user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
@@ -268,10 +270,10 @@ CREATE TABLE subscriptions (
   )
 );
 
-CREATE INDEX idx_subscriptions_user_id
+CREATE INDEX IF NOT EXISTS idx_subscriptions_user_id
 ON subscriptions(user_id);
 
-CREATE INDEX idx_subscriptions_status
+CREATE INDEX IF NOT EXISTS idx_subscriptions_status
 ON subscriptions(status);
 
 -- =========================================
@@ -280,7 +282,7 @@ ON subscriptions(status);
 -- Extremely useful in real SaaS apps
 -- Tracks important user actions
 
-CREATE TABLE audit_logs (
+CREATE TABLE IF NOT EXISTS audit_logs (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
 
   user_id UUID REFERENCES users(id) ON DELETE SET NULL,
@@ -295,10 +297,10 @@ CREATE TABLE audit_logs (
   created_at TIMESTAMP NOT NULL DEFAULT NOW()
 );
 
-CREATE INDEX idx_audit_logs_user_id
+CREATE INDEX IF NOT EXISTS idx_audit_logs_user_id
 ON audit_logs(user_id);
 
-CREATE INDEX idx_audit_logs_entity
+CREATE INDEX IF NOT EXISTS idx_audit_logs_entity
 ON audit_logs(entity_type, entity_id);
 
 -- =========================================
