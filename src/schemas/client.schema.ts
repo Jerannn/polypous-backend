@@ -17,6 +17,6 @@ export const createClientSchema = z.object({
 
 export const querySchema = z.object({
   page: z.coerce.number().min(1).default(1),
-  limit: z.coerce.number().min(1).max(100).default(LIMIT),
-  search: z.string().trim().optional(),
+  limit: z.coerce.number().min(1).max(LIMIT, `Limit must not exceed ${LIMIT}`).default(LIMIT),
+  search: z.string().trim().optional().default(""),
 });

@@ -1,30 +1,42 @@
 import { NextFunction, Request, Response } from "express";
 import AppError from "../utils/appError.js";
 import { HTTP_STATUS } from "../utils/constants.js";
+import { ZodError, ZodType } from "zod";
 
 export const validateRequest =
-  (schema: any) =>
+  ({ body, query }: { body?: ZodType; query?: ZodType }) =>
   (req: Request, res: Response, next: NextFunction): void => {
-    const validationResult = schema.safeParse({
-      ...req.body,
-    });
+    if (body) {
+      const result = body.safeParse(req.body);
 
-    if (!validationResult.success) {
-      // Extract error messages
-      const errorMessages = validationResult.error!.issues.reduce(
-        (acc: Record<string, string>, err: Record<string, string>) => ({
-          ...acc,
-          [err.path[0]]: err.message,
-        }),
-        {}
-      );
+      if (!result.success) return handleValidationError(result.error, next);
 
-      // Send a response if validation fails
-      next(new AppError("Validation failed", HTTP_STATUS.BAD_REQUEST, errorMessages));
-      return;
+      req.body = result.data;
     }
 
-    // If validation is successful, proceed to the next middleware
-    req.body = validationResult.data;
+    if (query) {
+      const result = query.safeParse(req.query);
+
+      if (!result.success) return handleValidationError(result.error, next);
+
+      req.validatedQuery = result.data as Record<string, unknown>;
+    }
+
     next();
   };
+
+function handleValidationError(error: ZodError, next: NextFunction) {
+  const errors: Record<string, string> = {};
+
+  // Extract error messages
+  for (const issue of error.issues) {
+    const field = String(issue.path[0]);
+
+    if (!errors[field]) {
+      errors[field] = issue.message;
+    }
+  }
+
+  // Send a response if validation fails
+  next(new AppError("Validation failed", HTTP_STATUS.BAD_REQUEST, errors));
+}
