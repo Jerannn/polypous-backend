@@ -1,0 +1,26 @@
+{
+  "compilerOptions": {
+    /* Base Options */
+    "target": "ES2022",
+    // NodeNext enforces modern ESM behavior. If you import a file, you MUST add .js to the end of it!
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+
+    /* Paths and Outputs */
+    "rootDir": "./src",
+    "outDir": "./dist",
+
+    /* Type Checking */
+    "strict": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+
+    /* Environment */
+    "esModuleInterop": true,
+    "sourceMap": true,
+    "typeRoots": ["./node_modules/@types", "./src/types"],
+    "types": ["node"]
+  },
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "dist"]
+}
