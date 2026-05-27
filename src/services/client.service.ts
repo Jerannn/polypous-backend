@@ -20,8 +20,21 @@ export default class ClientService {
 
     const offset = (page - 1) * limit;
 
-    const clients = await ClientModel.findAllByUserId(userId, offset, limit, search);
+    const clients = await ClientModel.findAllByUserId(userId, limit, offset, search);
 
-    return clients;
+    const total = clients[0]?.totalCount ?? 0;
+    const totalPages = Math.ceil(total / limit);
+
+    return {
+      meta: {
+        page,
+        limit,
+        total,
+        totalPages,
+        nextPage: page < totalPages ? page + 1 : null,
+        prevPage: page > 1 ? page - 1 : null,
+      },
+      clients,
+    };
   }
 }
