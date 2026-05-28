@@ -4,7 +4,7 @@ import { HTTP_STATUS } from "../utils/constants.js";
 import { ZodError, ZodType } from "zod";
 
 export const validateRequest =
-  ({ body, query }: { body?: ZodType; query?: ZodType }) =>
+  ({ body, query, params }: { body?: ZodType; query?: ZodType; params?: ZodType }) =>
   (req: Request, res: Response, next: NextFunction): void => {
     if (body) {
       const result = body.safeParse(req.body);
@@ -20,6 +20,14 @@ export const validateRequest =
       if (!result.success) return handleValidationError(result.error, next);
 
       req.validatedQuery = result.data as Record<string, unknown>;
+    }
+
+    if (params) {
+      const result = params.safeParse(req.params);
+
+      if (!result.success) return handleValidationError(result.error, next);
+
+      req.validatedParams = result.data as Record<string, unknown>;
     }
 
     next();

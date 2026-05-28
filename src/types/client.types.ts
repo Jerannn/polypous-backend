@@ -1,4 +1,4 @@
 import { z } from "zod";
-import { createClientSchema } from "../schemas/client.schema.js";
+import { clientSchema } from "../schemas/client.schema.js";
 
-export type CreateClientPayload = z.infer<typeof createClientSchema>;
+export type ClientPayload = z.infer<typeof clientSchema>;

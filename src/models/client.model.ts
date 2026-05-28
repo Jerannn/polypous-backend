@@ -1,9 +1,9 @@
 import camelcaseKeys from "camelcase-keys";
 import db from "../config/db.js";
-import { CreateClientPayload } from "../types/client.types.js";
+import { ClientPayload } from "../types/client.types.js";
 
 export default class ClientModel {
-  static async create(payload: CreateClientPayload, userId: string) {
+  static async create(payload: ClientPayload, userId: string) {
     const { name, email, phone, address, notes } = payload;
 
     const { rows } = await db.query(
@@ -50,5 +50,25 @@ export default class ClientModel {
     );
 
     return camelcaseKeys(rows);
+  }
+
+  static async update(id: string, payload: ClientPayload) {
+    const { name, email, phone, address, notes } = payload;
+
+    const { rows } = await db.query(
+      `
+        UPDATE clients
+        SET name = $2, email = $3, phone = $4, address = $5, notes = $6
+        WHERE id = $1
+        RETURNING *
+        `,
+      [id, name, email, phone, address, notes]
+    );
+
+    return camelcaseKeys(rows[0]);
+  }
+
+  static async delete(id: string) {
+    await db.query("DELETE FROM clients WHERE id = $1", [id]);
   }
 }
