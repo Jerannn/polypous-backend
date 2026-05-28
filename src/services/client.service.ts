@@ -1,10 +1,10 @@
 import { Request } from "express";
 import ClientModel from "../models/client.model.js";
-import { CreateClientPayload } from "../types/client.types.js";
+import { ClientPayload } from "../types/client.types.js";
 
 export default class ClientService {
   static async handleCreateClient(req: Request) {
-    const payload = req.body as CreateClientPayload;
+    const payload = req.body as ClientPayload;
     const userId = req.user.id;
     const newClient = await ClientModel.create(payload, userId);
 
@@ -43,5 +43,20 @@ export default class ClientService {
       },
       clients,
     };
+  }
+
+  static async handleUpdateClient(req: Request) {
+    const payload = req.body as ClientPayload;
+    const id = req.validatedParams.id as string;
+
+    const updatedClient = await ClientModel.update(id, payload);
+
+    return updatedClient;
+  }
+
+  static async handleDeleteClient(id: string) {
+    const deletedClient = await ClientModel.delete(id);
+
+    return deletedClient;
   }
 }

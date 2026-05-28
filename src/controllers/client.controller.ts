@@ -21,3 +21,22 @@ export const getClients = catchAsync(async (req: Request, res: Response, _next: 
     data: { meta, clients },
   });
 });
+
+export const updateClient = catchAsync(async (req: Request, res: Response, _next: NextFunction) => {
+  const updatedClient = await ClientService.handleUpdateClient(req);
+
+  res.status(HTTP_STATUS.OK).json({
+    status: "success",
+    data: { client: updatedClient },
+  });
+});
+
+export const deleteClient = catchAsync(async (req: Request, res: Response, _next: NextFunction) => {
+  const { id } = req.params;
+
+  await ClientService.handleDeleteClient(id as string);
+
+  res.status(HTTP_STATUS.OK).json({
+    status: "success",
+  });
+});

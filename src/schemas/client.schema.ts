@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { LIMIT } from "../utils/constants.js";
 
-export const createClientSchema = z.object({
+export const clientSchema = z.object({
   name: z
     .string()
     .trim()
@@ -19,4 +19,8 @@ export const querySchema = z.object({
   page: z.coerce.number().min(1).default(1),
   limit: z.coerce.number().min(1).max(LIMIT, `Limit must not exceed ${LIMIT}`).default(LIMIT),
   search: z.string().trim().optional().default(""),
+});
+
+export const clientParamsSchema = z.object({
+  id: z.uuid("Invalid UUID format for client id"),
 });
