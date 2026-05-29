@@ -20,19 +20,12 @@ export const createLimiter = ({
     legacyHeaders: false,
 
     keyGenerator: (req: Request): string => {
-      if (keyType === "user" && req.user?.id) {
-        return `user:${req.user.id}`;
-      }
-
-      if (keyType === "email" && req.body?.email) {
-        return `email:${req.body.email}`;
-      }
-
+      if (req.user?.id) return `user:${req.user.id}`;
       return `ip:${ipKeyGenerator(req.ip as string)}`;
     },
 
     handler: (_req, _res, next) => {
-      next(new AppError("Too many requests. Please try again later.", 429));
+      return next(new AppError("Too many requests. Please try again later.", 429));
     },
   });
 };
