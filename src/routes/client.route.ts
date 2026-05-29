@@ -8,13 +8,21 @@ import {
 import { protect } from "../middlewares/auth.middleware.js";
 import { validateRequest } from "../middlewares/validate.request.middleware.js";
 import { clientSchema, clientParamsSchema, querySchema } from "../schemas/client.schema.js";
+import { globalLimiter } from "../middlewares/rate-limiter.middleware.js";
 const router = express.Router();
 
-router.post("/", protect, validateRequest({ body: clientSchema }), createClient);
-router.get("/", protect, validateRequest({ query: querySchema }), getClients);
-router.delete("/:id", protect, validateRequest({ params: clientParamsSchema }), deleteClient);
+router.post("/", globalLimiter, protect, validateRequest({ body: clientSchema }), createClient);
+router.get("/", globalLimiter, protect, validateRequest({ query: querySchema }), getClients);
+router.delete(
+  "/:id",
+  globalLimiter,
+  protect,
+  validateRequest({ params: clientParamsSchema }),
+  deleteClient
+);
 router.patch(
   "/:id",
+  globalLimiter,
   protect,
   validateRequest({ body: clientSchema, params: clientParamsSchema }),
   updateClient

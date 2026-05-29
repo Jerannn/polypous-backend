@@ -41,7 +41,7 @@ export const register = catchAsync(async (req: Request, res: Response, _next: Ne
 
 export const login = catchAsync(async (req: Request, res: Response, _next: NextFunction) => {
   const { email, password } = req.body;
-  console.log(email, password);
+
   const user = await AuthService.authenticateUser(email, password);
 
   sendAuthResponse(user, HTTP_STATUS.OK, res);

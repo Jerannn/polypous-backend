@@ -76,7 +76,7 @@ export default (err: Error | AppError, req: Request, res: Response, _next: NextF
 
     if (err.name === "JsonWebTokenError" || err.name === "TokenExpiredError")
       processedError = handleJWTError();
-    console.log(error);
+
     if (error.details && error.details.code === "LIMIT_UNEXPECTED_FILE")
       processedError = handleMulterError();
     errorProd(processedError, res);
