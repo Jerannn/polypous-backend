@@ -38,7 +38,6 @@ export default class AuthModel {
   }
 
   static async findByEmail(email: string): Promise<User> {
-    console.log(email);
     const { rows } = await db.query(
       `
       SELECT *
