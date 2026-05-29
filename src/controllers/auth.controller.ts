@@ -18,6 +18,7 @@ const sendAuthResponse = (user: User, statusCode: number, res: Response) => {
     expires: new Date(Date.now() + Number(env.JWT_COOKIE_EXPIRES_IN) * 24 * 60 * 60 * 1000),
     httpOnly: true,
     secure: isProduction,
+    sameSite: isProduction ? "none" : "lax",
   };
 
   res.cookie("jwt", token, cookieOptions);
