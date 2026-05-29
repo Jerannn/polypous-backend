@@ -11,19 +11,19 @@ import { clientSchema, clientParamsSchema, querySchema } from "../schemas/client
 import { globalLimiter } from "../middlewares/rate-limiter.middleware.js";
 const router = express.Router();
 
-router.post("/", globalLimiter, protect, validateRequest({ body: clientSchema }), createClient);
-router.get("/", globalLimiter, protect, validateRequest({ query: querySchema }), getClients);
+router.post("/", protect, globalLimiter, validateRequest({ body: clientSchema }), createClient);
+router.get("/", protect, globalLimiter, validateRequest({ query: querySchema }), getClients);
 router.delete(
   "/:id",
-  globalLimiter,
   protect,
+  globalLimiter,
   validateRequest({ params: clientParamsSchema }),
   deleteClient
 );
 router.patch(
   "/:id",
-  globalLimiter,
   protect,
+  globalLimiter,
   validateRequest({ body: clientSchema, params: clientParamsSchema }),
   updateClient
 );
