@@ -129,7 +129,7 @@ CREATE TABLE IF NOT EXISTS invoices (
   user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
   client_id UUID NOT NULL REFERENCES clients(id) ON DELETE CASCADE,
 
-  invoice_number VARCHAR(50) NOT NULL,
+  invoice_number VARCHAR(50) NOT NULL UNIQUE,
 
   status invoice_status NOT NULL DEFAULT 'UNPAID',
 

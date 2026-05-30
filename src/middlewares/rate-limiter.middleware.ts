@@ -97,7 +97,7 @@ export const createLimiter = ({
 export const apiLimiter = createLimiter({
   name: "api",
   windowMs: 15 * 60 * 1000,
-  max: 3,
+  max: 200,
   keyType: "user",
 });
 
