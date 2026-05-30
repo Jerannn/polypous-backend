@@ -7,8 +7,9 @@ import env from "./config/env.js";
 
 // Routes
 import authRouter from "./routes/auth.route.js";
-import UserRouter from "./routes/user.route.js";
-import ClientRouter from "./routes/client.route.js";
+import userRouter from "./routes/user.route.js";
+import clientRouter from "./routes/client.route.js";
+import invoiceRouter from "./routes/invoice.route.js";
 
 // Error handler
 import globalErrorHandler from "./controllers/error.controller.js";
@@ -40,9 +41,9 @@ app.use(express.urlencoded({ extended: true, limit: "10kb" }));
 // API endpoints
 // app.use("/api", globalLimiter);
 app.use("/api/v1/auth", authRouter);
-app.use("/api/v1/users", UserRouter);
-app.use("/api/v1/clients", ClientRouter);
-// app.use("/api/v1/properties", propertiesRouter);
+app.use("/api/v1/users", userRouter);
+app.use("/api/v1/clients", clientRouter);
+app.use("/api/v1/invoices", invoiceRouter);
 
 // Route not found
 app.all(/.*/, (req: Request, res: Response, next: NextFunction) => {
