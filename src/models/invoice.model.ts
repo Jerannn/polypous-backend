@@ -1,26 +1,26 @@
 import camelcaseKeys from "camelcase-keys";
 import db from "../config/db.js";
 import { PoolClient } from "pg";
-import { InvoiceItemsPayload, InvoicePayload } from "../types/invoice.types.js";
+import { Invoice, InvoiceItemsPayload, InvoicePayload } from "../types/invoice.types.js";
 import { nanoid } from "nanoid";
 
 export default class InvoiceModel {
-  static async create(client: PoolClient, userId: string, payload: InvoicePayload) {
-    const { clientId, taxRate, issueDate, dueDate, notes } = payload;
+  static async create(client: PoolClient, payload: InvoicePayload): Promise<Invoice> {
+    const { userId, clientId, taxRate, issueDate, dueDate, notes, total, subtotal } = payload;
     const invoiceNumber = `INV-${new Date().getFullYear()}-${nanoid(6).toUpperCase()}`;
     const result = await client.query(
       `
-        INSERT INTO invoices (user_id, client_id, invoice_number, tax, issue_date, due_date, notes)
-        VALUES ($1, $2, $3, $4, $5, $6, $7)
+        INSERT INTO invoices (user_id, client_id, invoice_number, tax, issue_date, due_date, notes, total, subtotal)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
         RETURNING *
         `,
-      [userId, clientId, invoiceNumber, taxRate, issueDate, dueDate, notes]
+      [userId, clientId, invoiceNumber, taxRate, issueDate, dueDate, notes, total, subtotal]
     );
 
     return camelcaseKeys(result.rows[0]);
   }
 
-  static async addItem(client: PoolClient, invoiceId: string, payload: InvoiceItemsPayload) {
+  static async createItems(client: PoolClient, invoiceId: string, payload: InvoiceItemsPayload) {
     const params = payload
       .map(
         (_, idx) =>
@@ -38,7 +38,7 @@ export default class InvoiceModel {
       ])
       .flat();
 
-    const result = await client.query(
+    await client.query(
       `
         INSERT INTO invoice_items (invoice_id, description, quantity, unit_price, total)
         VALUES ${params}

@@ -7,7 +7,7 @@ export const getMe = catchAsync(async (req: Request, res: Response, _next: NextF
   req.user.passwordHash = undefined;
   req.user.passwordResetToken = undefined;
   req.user.passwordResetExpiresAt = undefined;
-
+  // console.log("User info sent to client:", req.user);
   res.status(HTTP_STATUS.OK).json({
     status: "success",
     data: { user: req.user },
