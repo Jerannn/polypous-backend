@@ -21,8 +21,8 @@ export const invoiceSchema = z
       .min(0, "Tax rate cannot be negative")
       .max(100, "Tax rate cannot exceed 100")
       .default(0),
-    issueDate: z.coerce.date(),
-    dueDate: z.coerce.date(),
+    issueDate: z.coerce.date("Issue date is required"),
+    dueDate: z.coerce.date("Due date is required"),
     notes: z.string().trim().max(1000, "Notes cannot exceed 1000 characters").optional(),
 
     items: z.array(invoiceItemSchema).min(1, "At least one invoice item is required"),
