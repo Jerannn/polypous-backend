@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { LIMIT } from "../utils/constants.js";
+import { DEFAULT_PAGE_SIZE, MAX_PAGE_SIZE } from "../utils/constants.js";
 
 export const clientSchema = z.object({
   name: z
@@ -17,7 +17,11 @@ export const clientSchema = z.object({
 
 export const querySchema = z.object({
   page: z.coerce.number().min(1).default(1),
-  limit: z.coerce.number().min(1).max(LIMIT, `Limit must not exceed ${LIMIT}`).default(LIMIT),
+  limit: z.coerce
+    .number()
+    .min(1)
+    .max(MAX_PAGE_SIZE, `Limit must not exceed ${DEFAULT_PAGE_SIZE}`)
+    .default(DEFAULT_PAGE_SIZE),
   search: z.string().trim().optional().default(""),
 });
 

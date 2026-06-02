@@ -39,3 +39,12 @@ export const deleteClient = catchAsync(async (req: Request, res: Response, _next
     status: "success",
   });
 });
+
+export const getOptions = catchAsync(async (req: Request, res: Response, _next: NextFunction) => {
+  const { options, nextCursor } = await ClientService.handleGetOptions(req);
+
+  res.status(HTTP_STATUS.OK).json({
+    status: "success",
+    data: { options, nextCursor },
+  });
+});

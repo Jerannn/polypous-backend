@@ -1,14 +1,14 @@
 import { Request } from "express";
 import ClientModel from "../models/client.model.js";
 import { ClientPayload } from "../types/client.types.js";
+import { DEFAULT_LIMIT_OPTIONS } from "../utils/constants.js";
 
 export default class ClientService {
   static async handleCreateClient(req: Request) {
     const payload = req.body as ClientPayload;
     const userId = req.user.id;
-    const newClient = await ClientModel.create(payload, userId);
 
-    return newClient;
+    return await ClientModel.create(payload, userId);
   }
 
   static async handleGetClients(req: Request) {
@@ -49,14 +49,39 @@ export default class ClientService {
     const payload = req.body as ClientPayload;
     const id = req.validatedParams.id as string;
 
-    const updatedClient = await ClientModel.update(id, payload);
-
-    return updatedClient;
+    return await ClientModel.update(id, payload);
   }
 
   static async handleDeleteClient(id: string) {
-    const deletedClient = await ClientModel.delete(id);
+    return await ClientModel.delete(id);
+  }
 
-    return deletedClient;
+  static async handleGetOptions(req: Request) {
+    const userId = req.user.id;
+    const { createdAt, id, limit = DEFAULT_LIMIT_OPTIONS, query } = req.query;
+
+    const pageSize = Number(limit);
+    const fetchLimit = pageSize + 1;
+    const cursor = {
+      id: id as string,
+      createdAt: createdAt as string,
+    };
+
+    const options = await ClientModel.findOptions(userId, cursor, fetchLimit, query as string);
+
+    let nextCursor = null;
+
+    if (options.length === fetchLimit) {
+      const lastOption = options[pageSize - 1];
+
+      nextCursor = {
+        id: lastOption.id,
+        createdAt: lastOption.createdAt,
+      };
+
+      options.pop();
+    }
+
+    return { options, nextCursor };
   }
 }
