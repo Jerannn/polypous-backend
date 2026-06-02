@@ -3,6 +3,7 @@ import {
   createClient,
   deleteClient,
   getClients,
+  getOptions,
   updateClient,
 } from "../controllers/client.controller.js";
 import { protect } from "../middlewares/auth.middleware.js";
@@ -27,5 +28,7 @@ router.patch(
   validateRequest({ body: clientSchema, params: clientParamsSchema }),
   updateClient
 );
+
+router.get("/options", protect, apiLimiter, getOptions);
 
 export default router;

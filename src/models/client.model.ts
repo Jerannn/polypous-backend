@@ -71,4 +71,33 @@ export default class ClientModel {
   static async delete(id: string) {
     await db.query("DELETE FROM clients WHERE id = $1", [id]);
   }
+
+  static async findOptions(
+    userId: string,
+    cursor: { id: string; createdAt: string },
+    limit: number,
+    query: string = ""
+  ) {
+    const createdAt = cursor?.createdAt ?? null;
+    const id = cursor?.id ?? null;
+
+    const { rows } = await db.query(
+      `
+      SELECT id, name, created_at
+      FROM clients 
+      WHERE user_id = $4
+        AND ($5::text = '' OR name ILIKE '%' || $5::text || '%')
+        AND (
+          $1::timestamp IS NULL 
+          OR (created_at, id) < ($1::timestamp, $2::uuid)
+        )
+      ORDER BY created_at DESC, id DESC
+      LIMIT $3
+      `,
+
+      [createdAt, id, limit, userId, query]
+    );
+
+    return camelcaseKeys(rows);
+  }
 }

@@ -76,18 +76,18 @@ CREATE TABLE IF NOT EXISTS users (
 
   -- Email verification
   email_verified BOOLEAN NOT NULL DEFAULT FALSE,
-  email_verified_at TIMESTAMP,
+  email_verified_at TIMESTAMPTZ,
 
   -- Auth recovery
   password_reset_token TEXT,
-  password_reset_expires_at TIMESTAMP,
+  password_reset_expires_at TIMESTAMPTZ,
 
   -- Account state
   is_active BOOLEAN NOT NULL DEFAULT TRUE,
-  last_login_at TIMESTAMP,
+  last_login_at TIMESTAMPTZ,
 
-  created_at TIMESTAMP NOT NULL DEFAULT NOW(),
-  updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
 
   -- Basic validation
   CHECK (char_length(full_name) >= 2)
@@ -110,15 +110,20 @@ CREATE TABLE IF NOT EXISTS clients (
   address TEXT,
   notes TEXT,
 
-  created_at TIMESTAMP NOT NULL DEFAULT NOW(),
-  updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
 
   CHECK (char_length(name) >= 2)
 );
 
 CREATE INDEX IF NOT EXISTS idx_clients_user_id ON clients(user_id);
 CREATE INDEX IF NOT EXISTS idx_clients_name_trgm ON clients USING gin (name gin_trgm_ops);
-
+CREATE INDEX IF NOT EXISTS idx_clients_user_created_id
+ON clients (
+  user_id,
+  created_at DESC,
+  id DESC
+);
 -- =========================================
 -- INVOICES
 -- =========================================
@@ -142,8 +147,8 @@ CREATE TABLE IF NOT EXISTS invoices (
 
   notes TEXT,
 
-  created_at TIMESTAMP NOT NULL DEFAULT NOW(),
-  updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
 
   UNIQUE(user_id, invoice_number),
 
@@ -171,7 +176,7 @@ CREATE TABLE IF NOT EXISTS invoice_items (
 
   total NUMERIC(12,2) NOT NULL CHECK (total >= 0),
 
-  created_at TIMESTAMP NOT NULL DEFAULT NOW()
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
 CREATE INDEX IF NOT EXISTS idx_invoice_items_invoice_id
@@ -191,13 +196,13 @@ CREATE TABLE IF NOT EXISTS payments (
 
   payment_method payment_method NOT NULL,
 
-  payment_date TIMESTAMP NOT NULL DEFAULT NOW(),
+  payment_date TIMESTAMPTZ NOT NULL DEFAULT NOW(),
 
   reference_number VARCHAR(100),
 
   notes TEXT,
 
-  created_at TIMESTAMP NOT NULL DEFAULT NOW()
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
 CREATE INDEX IF NOT EXISTS idx_payments_invoice_id ON payments(invoice_id);
@@ -214,7 +219,7 @@ CREATE TABLE IF NOT EXISTS invoice_status_history (
 
   status invoice_status NOT NULL,
 
-  changed_at TIMESTAMP NOT NULL DEFAULT NOW()
+  changed_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
 CREATE INDEX IF NOT EXISTS idx_invoice_status_history_invoice_id
@@ -237,7 +242,7 @@ CREATE TABLE IF NOT EXISTS user_monthly_stats (
   paid_invoices INT NOT NULL DEFAULT 0,
   unpaid_invoices INT NOT NULL DEFAULT 0,
 
-  created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
 
   UNIQUE(user_id, year, month)
 );
@@ -261,8 +266,8 @@ CREATE TABLE IF NOT EXISTS subscriptions (
   start_date DATE NOT NULL,
   end_date DATE,
 
-  created_at TIMESTAMP NOT NULL DEFAULT NOW(),
-  updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
 
   CHECK (
     end_date IS NULL
@@ -294,7 +299,7 @@ CREATE TABLE IF NOT EXISTS audit_logs (
 
   metadata JSONB,
 
-  created_at TIMESTAMP NOT NULL DEFAULT NOW()
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
 CREATE INDEX IF NOT EXISTS idx_audit_logs_user_id

@@ -34,4 +34,6 @@ export const OTP = {
   RESET_TOKEN_EXPIRATION_TIME: 10 * 60, // 10 minutes
 } as const;
 
-export const LIMIT = 10;
+export const DEFAULT_PAGE_SIZE = 10;
+export const MAX_PAGE_SIZE = 10;
+export const DEFAULT_LIMIT_OPTIONS = 10;
