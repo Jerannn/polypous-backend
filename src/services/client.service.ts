@@ -31,6 +31,10 @@ export default class ClientService {
     const total = clients[0]?.totalCount ?? 0;
     const totalPage = Math.ceil(total / parsedLimit);
 
+    const clientData = clients.map(({ totalCount, ...clients }) => ({
+      ...clients,
+    }));
+
     return {
       meta: {
         page,
@@ -41,7 +45,7 @@ export default class ClientService {
         nextPage: parsedPage < totalPage ? parsedPage + 1 : null,
         prevPage: parsedPage > 1 ? parsedPage - 1 : null,
       },
-      clients,
+      clients: clientData,
     };
   }
 
