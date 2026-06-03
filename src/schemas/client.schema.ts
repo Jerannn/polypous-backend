@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { DEFAULT_PAGE_SIZE, MAX_PAGE_SIZE } from "../utils/constants.js";
+import { DEFAULT_LIMIT_OPTIONS, DEFAULT_PAGE_SIZE, MAX_PAGE_SIZE } from "../utils/constants.js";
 
 export const clientSchema = z.object({
   name: z
@@ -27,4 +27,15 @@ export const querySchema = z.object({
 
 export const clientParamsSchema = z.object({
   id: z.uuid("Invalid UUID format for client id"),
+});
+
+export const queryOptionsSchema = z.object({
+  createdAt: z.string().trim().optional(),
+  id: z.uuid().optional(),
+  limit: z.coerce
+    .number()
+    .min(1)
+    .max(DEFAULT_LIMIT_OPTIONS, `Limit must not exceed ${DEFAULT_LIMIT_OPTIONS}`)
+    .default(DEFAULT_LIMIT_OPTIONS),
+  query: z.string().trim().optional().default(""),
 });

@@ -8,7 +8,12 @@ import {
 } from "../controllers/client.controller.js";
 import { protect } from "../middlewares/auth.middleware.js";
 import { validateRequest } from "../middlewares/validate.request.middleware.js";
-import { clientSchema, clientParamsSchema, querySchema } from "../schemas/client.schema.js";
+import {
+  clientSchema,
+  clientParamsSchema,
+  querySchema,
+  queryOptionsSchema,
+} from "../schemas/client.schema.js";
 import { apiLimiter } from "../middlewares/rate-limiter.middleware.js";
 const router = express.Router();
 
@@ -29,6 +34,12 @@ router.patch(
   updateClient
 );
 
-router.get("/options", protect, apiLimiter, getOptions);
+router.get(
+  "/options",
+  protect,
+  apiLimiter,
+  validateRequest({ query: queryOptionsSchema }),
+  getOptions
+);
 
 export default router;

@@ -8,14 +8,14 @@ export type InvoicePayload = Omit<InvoiceBase, "items"> & {
   userId: string;
   subtotal: number;
   total: number;
+  invoiceNumber: string;
 };
 export type InvoiceItemsPayload = InvoiceBase["items"];
-export type Invoice = InvoicePayload & {
+export type Invoice = Omit<InvoiceBase, "clientId"> & {
   id: string;
   invoiceNumber: string;
+  clientName: string;
   status: InvoiceStatus;
-  subtotal: number;
-  total: number;
   createdAt: Date | string;
   updatedAt: Date | string;
 };

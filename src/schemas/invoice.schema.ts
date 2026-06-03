@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { DEFAULT_PAGE_SIZE, MAX_PAGE_SIZE } from "../utils/constants.js";
 
 const invoiceItemSchema = z.object({
   description: z
@@ -31,3 +32,13 @@ export const invoiceSchema = z
     path: ["dueDate"],
     message: "Due date must be after issue date",
   });
+
+export const invoiceQuerySchema = z.object({
+  page: z.coerce.number().min(1).default(1),
+  limit: z.coerce
+    .number()
+    .min(1)
+    .max(MAX_PAGE_SIZE, `Limit must not exceed ${DEFAULT_PAGE_SIZE}`)
+    .default(DEFAULT_PAGE_SIZE),
+  search: z.string().trim().optional().default(""),
+});

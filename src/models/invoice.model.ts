@@ -2,12 +2,12 @@ import camelcaseKeys from "camelcase-keys";
 import db from "../config/db.js";
 import { PoolClient } from "pg";
 import { Invoice, InvoiceItemsPayload, InvoicePayload } from "../types/invoice.types.js";
-import { nanoid } from "nanoid";
 
 export default class InvoiceModel {
   static async create(client: PoolClient, payload: InvoicePayload): Promise<Invoice> {
-    const { userId, clientId, taxRate, issueDate, dueDate, notes, total, subtotal } = payload;
-    const invoiceNumber = `INV-${new Date().getFullYear()}-${nanoid(6).toUpperCase()}`;
+    const { userId, clientId, taxRate, issueDate, dueDate, notes, total, subtotal, invoiceNumber } =
+      payload;
+
     const result = await client.query(
       `
         INSERT INTO invoices (user_id, client_id, invoice_number, tax, issue_date, due_date, notes, total, subtotal)
@@ -46,5 +46,41 @@ export default class InvoiceModel {
         `,
       values
     );
+  }
+
+  static async findAllByUserId(userId: string, limit: number, offset: number, search: string = "") {
+    const { rows } = await db.query(
+      `
+      SELECT
+        id,
+        user_id,
+        invoice_number,
+        status,
+        issue_date,
+        due_date,
+        total,
+        subtotal,
+        tax,
+        notes,
+        created_at,
+        updated_at,
+        (
+          SELECT name
+          FROM clients
+          WHERE id = client_id
+        ) AS client_name,
+        COUNT(*) OVER()::INT as total_count
+        
+      FROM invoices
+      WHERE user_id = $1 
+            AND ($4::text = '' OR invoice_number ILIKE '%'|| $4 || '%')
+      ORDER BY created_at DESC
+      LIMIT $2
+      OFFSET $3
+      `,
+      [userId, limit, offset, search]
+    );
+
+    return camelcaseKeys(rows);
   }
 }
