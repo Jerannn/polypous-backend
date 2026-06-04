@@ -1,21 +1,56 @@
 import { z } from "zod";
-import { invoiceSchema } from "../schemas/invoice.schema.js";
+import { invoiceItemSchema, invoiceSchema } from "../schemas/invoice.schema.js";
 
 export type InvoiceStatus = "PAID" | "UNPAID" | "OVERDUE" | "CANCELLED";
 
-export type InvoiceBase = z.infer<typeof invoiceSchema>;
-export type InvoicePayload = Omit<InvoiceBase, "items"> & {
+export type InvoiceInput = Omit<z.infer<typeof invoiceSchema>, "items"> & {
   userId: string;
   subtotal: number;
   total: number;
   invoiceNumber: string;
 };
-export type InvoiceItemsPayload = InvoiceBase["items"];
-export type Invoice = Omit<InvoiceBase, "clientId"> & {
+export type InvoiceItemInput = z.infer<typeof invoiceItemSchema>;
+
+export type Invoice = {
   id: string;
+  userId: string;
+  clientId: string;
+
   invoiceNumber: string;
-  clientName: string;
+
+  issueDate: Date;
+  dueDate: Date;
+
+  notes?: string;
+
+  taxRate: number;
+
   status: InvoiceStatus;
-  createdAt: Date | string;
-  updatedAt: Date | string;
+
+  subtotal: number;
+  tax: number;
+  total: number;
+
+  createdAt: Date;
+  updatedAt: Date;
+};
+export type InvoiceItem = {
+  id: string;
+  description: string;
+  quantity: number;
+  unitPrice: number;
+  total: number;
+};
+
+export type InvoiceClient = {
+  name: string;
+  email: string;
+  phone: string;
+  address: string;
+};
+
+export type InvoiceListItem = Invoice & { clientName: string; totalCount: number };
+export type InvoiceWithItemsAndClient = Invoice & {
+  client: InvoiceClient;
+  items: InvoiceItem[];
 };
