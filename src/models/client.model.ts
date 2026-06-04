@@ -1,9 +1,9 @@
 import camelcaseKeys from "camelcase-keys";
 import db from "../config/db.js";
-import { ClientPayload } from "../types/client.types.js";
+import { Client, ClientPayload, ClientWithAnalytics, Options } from "../types/client.types.js";
 
 export default class ClientModel {
-  static async create(payload: ClientPayload, userId: string) {
+  static async create(payload: ClientPayload, userId: string): Promise<Client> {
     const { name, email, phone, address, notes } = payload;
 
     const { rows } = await db.query(
@@ -18,7 +18,12 @@ export default class ClientModel {
     return camelcaseKeys(rows[0]);
   }
 
-  static async findAllByUserId(userId: string, limit: number, offset: number, search: string = "") {
+  static async findAllByUserId(
+    userId: string,
+    limit: number,
+    offset: number,
+    search: string = ""
+  ): Promise<ClientWithAnalytics[]> {
     const { rows } = await db.query(
       `
         SELECT 
@@ -52,7 +57,7 @@ export default class ClientModel {
     return camelcaseKeys(rows);
   }
 
-  static async update(id: string, payload: ClientPayload) {
+  static async update(id: string, payload: ClientPayload): Promise<Client> {
     const { name, email, phone, address, notes } = payload;
 
     const { rows } = await db.query(
@@ -77,7 +82,7 @@ export default class ClientModel {
     cursor: { id: string; createdAt: string },
     limit: number,
     query: string = ""
-  ) {
+  ): Promise<Options[]> {
     const createdAt = cursor?.createdAt ?? null;
     const id = cursor?.id ?? null;
 

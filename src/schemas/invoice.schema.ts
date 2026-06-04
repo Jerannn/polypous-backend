@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { DEFAULT_PAGE_SIZE, MAX_PAGE_SIZE } from "../utils/constants.js";
 
-const invoiceItemSchema = z.object({
+export const invoiceItemSchema = z.object({
   description: z
     .string()
     .trim()
@@ -41,4 +41,8 @@ export const invoiceQuerySchema = z.object({
     .max(MAX_PAGE_SIZE, `Limit must not exceed ${DEFAULT_PAGE_SIZE}`)
     .default(DEFAULT_PAGE_SIZE),
   search: z.string().trim().optional().default(""),
+});
+
+export const invoiceIdParamsSchema = z.object({
+  id: z.uuid("Invalid UUID format for client id"),
 });

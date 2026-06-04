@@ -22,3 +22,12 @@ export const getInvoices = catchAsync(async (req: Request, res: Response, _next:
     data: { meta, invoices },
   });
 });
+
+export const getInvoice = catchAsync(async (req: Request, res: Response, _next: NextFunction) => {
+  const invoice = await InvoiceService.handleGetInvoice(req);
+
+  res.status(HTTP_STATUS.OK).json({
+    status: "success",
+    data: { invoice },
+  });
+});
