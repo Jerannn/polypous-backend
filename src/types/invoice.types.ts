@@ -53,4 +53,6 @@ export type InvoiceListItem = Invoice & { clientName: string; totalCount: number
 export type InvoiceWithItemsAndClient = Invoice & {
   client: InvoiceClient;
   items: InvoiceItem[];
+  fullName: string;
+  email: string;
 };

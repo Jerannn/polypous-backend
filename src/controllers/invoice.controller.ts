@@ -31,3 +31,13 @@ export const getInvoice = catchAsync(async (req: Request, res: Response, _next: 
     data: { invoice },
   });
 });
+
+export const deleteInvoice = catchAsync(
+  async (req: Request, res: Response, _next: NextFunction) => {
+    await InvoiceService.handleDeleteInvoice(req.params.id as string);
+
+    res.status(HTTP_STATUS.OK).json({
+      status: "success",
+    });
+  }
+);
