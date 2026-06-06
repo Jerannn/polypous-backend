@@ -1,8 +1,9 @@
-import { Request } from "express";
+import { NextFunction, Request } from "express";
 import db from "../config/db.js";
 import InvoiceModel from "../models/invoice.model.js";
 import { InvoiceItemInput, InvoiceInput } from "../types/invoice.types.js";
 import { nanoid } from "nanoid";
+import AppError from "../utils/appError.js";
 
 export default class InvoiceService {
   static async handleCreateInvoice(req: Request) {
@@ -90,6 +91,12 @@ export default class InvoiceService {
     const invoiceId = req.params.id as string;
     const invoice = await InvoiceModel.findByInvoiceId(invoiceId);
 
+    if (!invoice) throw new AppError("Invoice not found", 404);
+
     return invoice;
+  }
+
+  static async handleDeleteInvoice(id: string) {
+    await InvoiceModel.delete(id);
   }
 }

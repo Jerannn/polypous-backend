@@ -7,7 +7,12 @@ import {
   invoiceQuerySchema,
   invoiceSchema,
 } from "../schemas/invoice.schema.js";
-import { createInvoice, getInvoice, getInvoices } from "../controllers/invoice.controller.js";
+import {
+  createInvoice,
+  deleteInvoice,
+  getInvoice,
+  getInvoices,
+} from "../controllers/invoice.controller.js";
 
 const router = express.Router();
 
@@ -20,5 +25,11 @@ router.get(
   validateRequest({ params: invoiceIdParamsSchema }),
   getInvoice
 );
-
+router.delete(
+  "/:id",
+  protect,
+  apiLimiter,
+  validateRequest({ params: invoiceIdParamsSchema }),
+  deleteInvoice
+);
 export default router;

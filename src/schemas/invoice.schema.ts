@@ -44,5 +44,5 @@ export const invoiceQuerySchema = z.object({
 });
 
 export const invoiceIdParamsSchema = z.object({
-  id: z.uuid("Invalid UUID format for client id"),
+  id: z.uuid("Invalid invoice id"),
 });

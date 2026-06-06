@@ -141,6 +141,7 @@ export default class InvoiceModel {
           SELECT
             JSON_AGG(
               JSON_BUILD_OBJECT(
+                'id', id,
                 'description', description,
                 'quantity', quantity,
                 'unit_price', unit_price,
@@ -157,5 +158,9 @@ export default class InvoiceModel {
     );
 
     return camelcaseKeys(rows[0]);
+  }
+
+  static async delete(id: string) {
+    await db.query("DELETE FROM invoices WHERE id = $1", [id]);
   }
 }
