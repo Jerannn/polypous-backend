@@ -33,10 +33,11 @@ export const updateClient = catchAsync(async (req: Request, res: Response, _next
 export const deleteClient = catchAsync(async (req: Request, res: Response, _next: NextFunction) => {
   const { id } = req.params;
 
-  await ClientService.handleDeleteClient(id as string);
+  const isDeleted = await ClientService.handleDeleteClient(id as string);
 
   res.status(HTTP_STATUS.OK).json({
     status: "success",
+    data: { isDeleted },
   });
 });
 

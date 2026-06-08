@@ -36,9 +36,9 @@ export default class InvoiceService {
     try {
       await client.query("BEGIN");
 
-      const newInvoice = await InvoiceModel.create(client, invoicePayload);
+      const newInvoice = await InvoiceModel.insert(client, invoicePayload);
 
-      await InvoiceModel.createItems(client, newInvoice.id, items as InvoiceItemInput[]);
+      await InvoiceModel.insertItems(client, newInvoice.id, items as InvoiceItemInput[]);
 
       await client.query("COMMIT");
 
@@ -96,7 +96,44 @@ export default class InvoiceService {
     return invoice;
   }
 
-  static async handleDeleteInvoice(id: string) {
-    await InvoiceModel.delete(id);
+  static async handleDeleteInvoice(id: string): Promise<boolean> {
+    return await InvoiceModel.delete(id);
+  }
+
+  static async handleUpdateInvoice(req: Request) {
+    const client = await db.pool.connect();
+
+    const invoiceId = req.params.id as string;
+    const { items, ...invoice } = req.body;
+
+    const totalAndSubtotal = (items as InvoiceItemInput[]).reduce(
+      (acc, item) => {
+        const itemTotal = item.quantity * item.unitPrice;
+        return { total: acc.total + itemTotal, subtotal: acc.subtotal + itemTotal };
+      },
+      { total: 0, subtotal: 0 }
+    );
+
+    const taxAmount = (totalAndSubtotal.subtotal * invoice.taxRate) / 100;
+
+    const invoicePayload: InvoiceInput = {
+      ...invoice,
+      total: totalAndSubtotal.total + taxAmount,
+      subtotal: totalAndSubtotal.subtotal,
+    };
+
+    try {
+      await client.query("BEGIN");
+
+      await InvoiceModel.update(client, invoiceId, invoicePayload);
+      await InvoiceModel.replaceItems(client, invoiceId, items as InvoiceItemInput[]);
+
+      await client.query("COMMIT");
+    } catch (error) {
+      await client.query("ROLLBACK");
+      throw error;
+    } finally {
+      client.release();
+    }
   }
 }

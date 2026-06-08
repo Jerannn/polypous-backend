@@ -12,6 +12,7 @@ import {
   deleteInvoice,
   getInvoice,
   getInvoices,
+  updateInvoice,
 } from "../controllers/invoice.controller.js";
 
 const router = express.Router();
@@ -25,6 +26,15 @@ router.get(
   validateRequest({ params: invoiceIdParamsSchema }),
   getInvoice
 );
+
+router.patch(
+  "/:id",
+  protect,
+  apiLimiter,
+  validateRequest({ body: invoiceSchema, params: invoiceIdParamsSchema }),
+  updateInvoice
+);
+
 router.delete(
   "/:id",
   protect,
