@@ -32,12 +32,24 @@ export const getInvoice = catchAsync(async (req: Request, res: Response, _next: 
   });
 });
 
-export const deleteInvoice = catchAsync(
+export const updateInvoice = catchAsync(
   async (req: Request, res: Response, _next: NextFunction) => {
-    await InvoiceService.handleDeleteInvoice(req.params.id as string);
+    const updatedInvoice = await InvoiceService.handleUpdateInvoice(req);
 
     res.status(HTTP_STATUS.OK).json({
       status: "success",
+      data: { invoice: updatedInvoice },
+    });
+  }
+);
+
+export const deleteInvoice = catchAsync(
+  async (req: Request, res: Response, _next: NextFunction) => {
+    const isDeleted = await InvoiceService.handleDeleteInvoice(req.params.id as string);
+
+    res.status(HTTP_STATUS.OK).json({
+      status: "success",
+      data: { isDeleted },
     });
   }
 );

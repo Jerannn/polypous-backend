@@ -10,7 +10,7 @@ import {
 } from "../types/invoice.types.js";
 
 export default class InvoiceModel {
-  static async create(client: PoolClient, payload: InvoiceInput): Promise<Invoice> {
+  static async insert(client: PoolClient, payload: InvoiceInput): Promise<Invoice> {
     const { userId, clientId, taxRate, issueDate, dueDate, notes, total, subtotal, invoiceNumber } =
       payload;
 
@@ -26,7 +26,7 @@ export default class InvoiceModel {
     return camelcaseKeys(result.rows[0]);
   }
 
-  static async createItems(client: PoolClient, invoiceId: string, payload: InvoiceItemInput[]) {
+  static async insertItems(client: PoolClient, invoiceId: string, payload: InvoiceItemInput[]) {
     const params = payload
       .map(
         (_, idx) =>
@@ -128,6 +128,7 @@ export default class InvoiceModel {
         LEFT JOIN LATERAL (
           SELECT
             JSON_BUILD_OBJECT(
+              'id', id,
               'name', name,
               'email', email,
               'phone', phone,
@@ -157,10 +158,33 @@ export default class InvoiceModel {
       [invoiceId]
     );
 
-    return camelcaseKeys(rows[0]);
+    return camelcaseKeys(rows[0], { deep: true });
   }
 
-  static async delete(id: string) {
-    await db.query("DELETE FROM invoices WHERE id = $1", [id]);
+  static async update(client: PoolClient, invoiceId: string, payload: InvoiceInput) {
+    const { clientId, taxRate, issueDate, dueDate, notes, total, subtotal } = payload;
+
+    await db.query(
+      `
+      UPDATE invoices
+      SET client_id = $2, tax = $3, issue_date = $4, due_date = $5, subtotal = $6, total = $7, notes = $8
+      WHERE id = $1
+      RETURNING *
+      `,
+      [invoiceId, clientId, taxRate, issueDate, dueDate, subtotal, total, notes]
+    );
+  }
+
+  static async replaceItems(client: PoolClient, invoiceId: string, payload: InvoiceItemInput[]) {
+    await client.query("DELETE FROM invoice_items WHERE invoice_id = $1", [invoiceId]);
+
+    // insert new items
+    await this.insertItems(client, invoiceId, payload);
+  }
+
+  static async delete(id: string): Promise<boolean> {
+    const { rowCount } = await db.query("DELETE FROM invoices WHERE id = $1", [id]);
+
+    return rowCount !== null && rowCount > 0;
   }
 }

@@ -3,7 +3,7 @@ import db from "../config/db.js";
 import { Client, ClientPayload, ClientWithAnalytics, Options } from "../types/client.types.js";
 
 export default class ClientModel {
-  static async create(payload: ClientPayload, userId: string): Promise<Client> {
+  static async insert(payload: ClientPayload, userId: string): Promise<Client> {
     const { name, email, phone, address, notes } = payload;
 
     const { rows } = await db.query(
@@ -73,8 +73,10 @@ export default class ClientModel {
     return camelcaseKeys(rows[0]);
   }
 
-  static async delete(id: string) {
-    await db.query("DELETE FROM clients WHERE id = $1", [id]);
+  static async delete(id: string): Promise<boolean> {
+    const { rowCount } = await db.query("DELETE FROM clients WHERE id = $1", [id]);
+
+    return rowCount !== null && rowCount > 0;
   }
 
   static async findOptions(

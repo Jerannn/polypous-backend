@@ -8,7 +8,7 @@ export default class ClientService {
     const payload = req.body as ClientPayload;
     const userId = req.user.id;
 
-    return await ClientModel.create(payload, userId);
+    return await ClientModel.insert(payload, userId);
   }
 
   static async handleGetClients(req: Request) {
@@ -56,7 +56,7 @@ export default class ClientService {
     return await ClientModel.update(id, payload);
   }
 
-  static async handleDeleteClient(id: string) {
+  static async handleDeleteClient(id: string): Promise<boolean> {
     return await ClientModel.delete(id);
   }
 

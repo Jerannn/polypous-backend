@@ -14,7 +14,6 @@ export type InvoiceItemInput = z.infer<typeof invoiceItemSchema>;
 export type Invoice = {
   id: string;
   userId: string;
-  clientId: string;
 
   invoiceNumber: string;
 
@@ -22,8 +21,6 @@ export type Invoice = {
   dueDate: Date;
 
   notes?: string;
-
-  taxRate: number;
 
   status: InvoiceStatus;
 
@@ -43,6 +40,7 @@ export type InvoiceItem = {
 };
 
 export type InvoiceClient = {
+  id: string;
   name: string;
   email: string;
   phone: string;
