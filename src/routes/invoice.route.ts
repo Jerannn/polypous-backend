@@ -10,6 +10,7 @@ import {
 import {
   createInvoice,
   deleteInvoice,
+  downloadInvoicePDF,
   getInvoice,
   getInvoices,
   updateInvoice,
@@ -42,4 +43,6 @@ router.delete(
   validateRequest({ params: invoiceIdParamsSchema }),
   deleteInvoice
 );
+
+router.get("/:id/pdf", protect, apiLimiter, downloadInvoicePDF);
 export default router;
