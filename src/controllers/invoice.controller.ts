@@ -53,3 +53,12 @@ export const deleteInvoice = catchAsync(
     });
   }
 );
+
+export const downloadInvoicePDF = catchAsync(
+  async (req: Request, res: Response, _next: NextFunction) => {
+    const pdf = await InvoiceService.handleDownloadInvoicePDF(req.params.id as string);
+    res.setHeader("Content-Type", "application/pdf");
+    res.setHeader("Content-Disposition", `attachment; filename=invoice-${req.params.id}.pdf`);
+    res.send(pdf);
+  }
+);

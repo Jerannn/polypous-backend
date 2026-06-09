@@ -4,6 +4,10 @@ import InvoiceModel from "../models/invoice.model.js";
 import { InvoiceItemInput, InvoiceInput } from "../types/invoice.types.js";
 import { nanoid } from "nanoid";
 import AppError from "../utils/appError.js";
+import { buildInvoiceHTML } from "../utils/buildInvoiceHtml.js";
+import generate from "./pdf.service.js";
+// import { PdfService } from "./pdf.service.js";
+// import PDFService from "./pdf.service.js";
 
 export default class InvoiceService {
   static async handleCreateInvoice(req: Request) {
@@ -135,5 +139,17 @@ export default class InvoiceService {
     } finally {
       client.release();
     }
+  }
+
+  static async handleDownloadInvoicePDF(id: string) {
+    const invoice = await InvoiceModel.findByInvoiceId(id);
+
+    if (!invoice) throw new AppError("Invoice not found", 404);
+
+    const html = buildInvoiceHTML(invoice);
+
+    // const pdf = await generate(html);
+
+    // return pdf;
   }
 }

@@ -10,6 +10,7 @@ import authRouter from "./routes/auth.route.js";
 import userRouter from "./routes/user.route.js";
 import clientRouter from "./routes/client.route.js";
 import invoiceRouter from "./routes/invoice.route.js";
+import paymentRouter from "./routes/payment.route.js";
 
 // Error handler
 import globalErrorHandler from "./controllers/error.controller.js";
@@ -44,6 +45,7 @@ app.use("/api/v1/auth", authRouter);
 app.use("/api/v1/users", userRouter);
 app.use("/api/v1/clients", clientRouter);
 app.use("/api/v1/invoices", invoiceRouter);
+app.use("/api/v1/payments", paymentRouter);
 
 // Route not found
 app.all(/.*/, (req: Request, res: Response, next: NextFunction) => {
