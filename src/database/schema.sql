@@ -207,6 +207,8 @@ CREATE TABLE IF NOT EXISTS payments (
 
 CREATE INDEX IF NOT EXISTS idx_payments_invoice_id ON payments(invoice_id);
 CREATE INDEX IF NOT EXISTS idx_payments_user_id ON payments(user_id);
+CREATE INDEX IF NOT EXISTS idx_invoice_number_trgm ON invoices USING gin (invoice_number gin_trgm_ops);
+CREATE INDEX idx_payment_reference_trgm ON payments USING gin(reference_number gin_trgm_ops);
 
 -- =========================================
 -- INVOICE STATUS HISTORY

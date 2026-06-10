@@ -10,6 +10,43 @@ export default class PaymentService {
 
     const newPayment = await PaymentModel.insert(userId, invoiceId, payload);
 
-    return newPayment;
+    return { ...newPayment, amount: Number(newPayment.amount) };
+  }
+
+  static async handleGetAllPayments(req: Request) {
+    const userId = req.user.id;
+    const { page, limit, search } = req.validatedQuery;
+
+    const parsedLimit = Number(limit);
+    const parsedPage = Number(page);
+
+    const offset = (parsedPage - 1) * parsedLimit;
+
+    const payments = await PaymentModel.findAllByUserId(
+      userId,
+      parsedLimit,
+      offset,
+      search as string
+    );
+
+    const total = payments[0]?.totalCount ?? 0;
+    const totalPage = Math.ceil(total / parsedLimit);
+
+    const paymentData = payments.map(({ totalCount, ...payment }) => ({
+      ...payment,
+      amount: Number(payment.amount),
+    }));
+
+    return {
+      meta: {
+        limit,
+        total,
+        totalPage,
+        currentPage: parsedPage,
+        nextPage: parsedPage < totalPage ? parsedPage + 1 : null,
+        prevPage: parsedPage > 1 ? parsedPage - 1 : null,
+      },
+      payments: paymentData,
+    };
   }
 }

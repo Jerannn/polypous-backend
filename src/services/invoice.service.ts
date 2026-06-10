@@ -46,7 +46,12 @@ export default class InvoiceService {
 
       await client.query("COMMIT");
 
-      return newInvoice;
+      return {
+        ...newInvoice,
+        total: Number(newInvoice.total),
+        subtotal: Number(newInvoice.subtotal),
+        tax: Number(newInvoice.tax),
+      };
     } catch (error) {
       await client.query("ROLLBACK");
       throw error;
@@ -76,6 +81,9 @@ export default class InvoiceService {
 
     const invoiceData = invoices.map(({ totalCount, ...invoice }) => ({
       ...invoice,
+      total: Number(invoice.total),
+      subtotal: Number(invoice.subtotal),
+      tax: Number(invoice.tax),
     }));
 
     return {
@@ -97,7 +105,12 @@ export default class InvoiceService {
 
     if (!invoice) throw new AppError("Invoice not found", 404);
 
-    return invoice;
+    return {
+      ...invoice,
+      total: Number(invoice.total),
+      subtotal: Number(invoice.subtotal),
+      tax: Number(invoice.tax),
+    };
   }
 
   static async handleDeleteInvoice(id: string): Promise<boolean> {
