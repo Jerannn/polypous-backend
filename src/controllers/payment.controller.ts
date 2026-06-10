@@ -13,3 +13,14 @@ export const createPayment = catchAsync(
     });
   }
 );
+
+export const getAllPayments = catchAsync(
+  async (req: Request, res: Response, _next: NextFunction) => {
+    const { payments, meta } = await PaymentService.handleGetAllPayments(req);
+
+    res.status(HTTP_STATUS.OK).json({
+      status: "success",
+      data: { meta, payments },
+    });
+  }
+);
