@@ -8,6 +8,7 @@ import { buildInvoiceHTML } from "../utils/buildInvoiceHtml.js";
 import generate from "./pdf.service.js";
 // import { PdfService } from "./pdf.service.js";
 // import PDFService from "./pdf.service.js";
+import { Decimal } from "decimal.js";
 
 export default class InvoiceService {
   static async handleCreateInvoice(req: Request) {
@@ -105,11 +106,25 @@ export default class InvoiceService {
 
     if (!invoice) throw new AppError("Invoice not found", 404);
 
+    const taxAmount = new Decimal(invoice.tax).mul(invoice.subtotal).div(100).toNumber();
+    const total = new Decimal(invoice.total).toNumber();
+    const subtotal = new Decimal(invoice.subtotal).toNumber();
+    const tax = new Decimal(invoice.tax).toNumber();
+
+    const amountPaid = invoice.payments
+      .reduce((acc, payment) => acc.add(payment.amount), new Decimal(0))
+      .toNumber();
+
+    const balance = new Decimal(total).sub(amountPaid).toNumber();
+
     return {
       ...invoice,
-      total: Number(invoice.total),
-      subtotal: Number(invoice.subtotal),
-      tax: Number(invoice.tax),
+      total,
+      subtotal,
+      tax,
+      taxAmount,
+      amountPaid,
+      balance,
     };
   }
 
