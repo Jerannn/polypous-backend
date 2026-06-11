@@ -108,10 +108,10 @@ export default class InvoiceModel {
           inv.tax,
           inv.total,
           inv.notes,
-          u.full_name,
-          u.email,
+          COALESCE(user_obj, '{}') AS freelancer,
           COALESCE(client, '{}') AS client,
           COALESCE(items, '[]') AS items,
+          COALESCE(payment_data, '[]') AS payments,
           inv.created_at,
           inv.updated_at
 
@@ -119,11 +119,14 @@ export default class InvoiceModel {
 
         LEFT JOIN LATERAL (
           SELECT 
-             full_name,
-             email
+            JSON_BUILD_OBJECT(
+              'full_name', full_name,
+              'email', email,
+              'currency', currency
+            ) AS user_obj
           FROM users
           WHERE id = inv.user_id
-        ) u ON TRUE
+        ) user_obj ON TRUE
 
         LEFT JOIN LATERAL (
           SELECT
@@ -152,6 +155,22 @@ export default class InvoiceModel {
           FROM invoice_items
           WHERE invoice_id = inv.id
         ) items ON TRUE
+
+        LEFT JOIN LATERAL (
+          SELECT
+            JSON_AGG(
+              JSON_BUILD_OBJECT(
+                'id', p.id,
+                'amount', p.amount,
+                'payment_method', p.payment_method,
+                'reference_number', p.reference_number,
+                'payment_date', p.payment_date,
+                'notes', p.notes
+              ) ORDER BY p.payment_date DESC
+            ) FILTER (WHERE p.amount IS NOT NULL) AS payment_data
+          FROM payments p
+          WHERE p.invoice_id = inv.id
+        ) payment_data ON TRUE
 
         WHERE inv.id = $1
       `,
