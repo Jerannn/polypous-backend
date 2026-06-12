@@ -3,9 +3,11 @@ import env from "../config/env.js";
 import AppError from "../utils/appError.js";
 import { HTTP_STATUS } from "../utils/constants.js";
 import { MESSAGES } from "../utils/constants.js";
+import camelcaseKeys from "camelcase-keys";
+import camelCase from "camelcase";
 
 interface PostgresError extends Error {
-  constraint: string;
+  detail: string;
 }
 
 const handleMulterError = () => {
@@ -13,12 +15,18 @@ const handleMulterError = () => {
 };
 
 const handleUniqueError = (err: PostgresError) => {
-  const arr = err.constraint.split("_") || [];
-  const field = arr.length > 0 ? arr[1] : "field";
+  const detail = err.detail;
 
-  return new AppError(MESSAGES.VALIDATION_FAILED, HTTP_STATUS.BAD_REQUEST, {
-    [field]: `This ${field} is already in use`,
-  });
+  const match = detail?.match(/\((.*?)\)=/);
+  const field = match?.[1] ?? "field";
+
+  return new AppError(
+    MESSAGES.VALIDATION_FAILED,
+    HTTP_STATUS.BAD_REQUEST,
+    camelcaseKeys({
+      [field]: `This ${field.replace("_", " ")} is already in use`,
+    })
+  );
 };
 
 const handleJWTError = () => {
