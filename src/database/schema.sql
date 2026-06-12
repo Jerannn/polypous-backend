@@ -198,7 +198,7 @@ CREATE TABLE IF NOT EXISTS payments (
 
   payment_date TIMESTAMPTZ NOT NULL DEFAULT NOW(),
 
-  reference_number VARCHAR(100),
+  reference_number VARCHAR(100) UNIQUE,
 
   notes TEXT,
 

@@ -176,8 +176,8 @@ export default class InvoiceService {
 
     const html = buildInvoiceHTML(invoice);
 
-    // const pdf = await generate(html);
+    const pdf = await generate(html);
 
-    // return pdf;
+    return { pdf, filename: `invoice-${invoice.invoiceNumber}.pdf` };
   }
 }

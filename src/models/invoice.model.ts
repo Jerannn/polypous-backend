@@ -166,7 +166,7 @@ export default class InvoiceModel {
                 'reference_number', p.reference_number,
                 'payment_date', p.payment_date,
                 'notes', p.notes
-              ) ORDER BY p.payment_date DESC
+              ) ORDER BY p.created_at DESC
             ) FILTER (WHERE p.amount IS NOT NULL) AS payment_data
           FROM payments p
           WHERE p.invoice_id = inv.id

@@ -1,6 +1,7 @@
 import { Request } from "express";
 import { PaymentInput } from "../types/payment.types.js";
 import PaymentModel from "../models/payment.model.js";
+import db from "../config/db.js";
 
 export default class PaymentService {
   static async handleCreatePayment(req: Request) {
@@ -8,9 +9,25 @@ export default class PaymentService {
     const userId = req.user.id;
     const invoiceId = req.params.id as string;
 
-    const newPayment = await PaymentModel.insert(userId, invoiceId, payload);
+    const client = await db.pool.connect();
 
-    return { ...newPayment, amount: Number(newPayment.amount) };
+    try {
+      await client.query("BEGIN");
+
+      const newPayment = await PaymentModel.insert(client, userId, invoiceId, payload);
+
+      await PaymentModel.updateStatus(client, invoiceId);
+
+      await client.query("COMMIT");
+
+      return { ...newPayment, amount: Number(newPayment.amount) };
+    } catch (error) {
+      await client.query("ROLLBACK");
+      console.log(error);
+      throw error;
+    } finally {
+      client.release();
+    }
   }
 
   static async handleGetAllPayments(req: Request) {
