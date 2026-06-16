@@ -38,12 +38,12 @@ CREATE TYPE invoice_status AS ENUM (
   'CANCELLED'
 );
 
-CREATE TYPE payment_method AS ENUM (
-  'CASH',
-  'BANK',
-  'GCASH',
-  'PAYPAL'
-);
+-- CREATE TYPE payment_method AS ENUM (
+--   'CASH',
+--   'BANK',
+--   'GCASH',
+--   'PAYPAL'
+-- );
 
 CREATE TYPE subscription_plan AS ENUM (
   'FREE',
@@ -194,7 +194,7 @@ CREATE TABLE IF NOT EXISTS payments (
 
   amount NUMERIC(12,2) NOT NULL CHECK (amount > 0),
 
-  payment_method payment_method NOT NULL,
+  payment_method VARCHAR(50) NOT NULL,
 
   payment_date TIMESTAMPTZ NOT NULL DEFAULT NOW(),
 
@@ -209,6 +209,7 @@ CREATE INDEX IF NOT EXISTS idx_payments_invoice_id ON payments(invoice_id);
 CREATE INDEX IF NOT EXISTS idx_payments_user_id ON payments(user_id);
 CREATE INDEX IF NOT EXISTS idx_invoice_number_trgm ON invoices USING gin (invoice_number gin_trgm_ops);
 CREATE INDEX idx_payment_reference_trgm ON payments USING gin(reference_number gin_trgm_ops);
+CREATE INDEX idx_payments_user_date ON payments (user_id, payment_date);
 
 -- =========================================
 -- INVOICE STATUS HISTORY

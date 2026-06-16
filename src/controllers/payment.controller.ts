@@ -24,3 +24,14 @@ export const getAllPayments = catchAsync(
     });
   }
 );
+
+export const getPaymentStats = catchAsync(
+  async (req: Request, res: Response, _next: NextFunction) => {
+    const stats = await PaymentService.handleGetPaymentStats(req.user.id as string);
+
+    res.status(HTTP_STATUS.OK).json({
+      status: "success",
+      data: { stats },
+    });
+  }
+);
