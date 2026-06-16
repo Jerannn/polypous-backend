@@ -1,6 +1,6 @@
 import camelcaseKeys from "camelcase-keys";
 import db from "../config/db.js";
-import { Payment, PaymentInput, PaymentListItem } from "../types/payment.types.js";
+import { Payment, PaymentInput, PaymentListItem, PaymentStats } from "../types/payment.types.js";
 import { PoolClient } from "pg";
 
 export default class PaymentModel {
@@ -11,7 +11,7 @@ export default class PaymentModel {
     payload: PaymentInput
   ): Promise<Payment> {
     const { amount, paymentMethod, referenceNumber, paymentDate, notes } = payload;
-
+    console.log("paymentDate: ", paymentDate);
     const { rows } = await client.query(
       `
         INSERT INTO payments (user_id, invoice_id, amount, payment_method, reference_number, payment_date, notes)
@@ -70,5 +70,24 @@ export default class PaymentModel {
       `,
       [invoiceId]
     );
+  }
+
+  static async findPaymentsByUserId(userId: string): Promise<PaymentStats> {
+    const { rows } = await db.query(
+      `
+      SELECT 
+        COUNT(*) AS total_payments,
+        COALESCE(SUM(amount), 0) AS total_revenue,
+        COALESCE(AVG(amount), 0)::NUMERIC(12, 2) AS average_payment,
+        COALESCE(SUM(amount) FILTER (
+          WHERE payment_date >= date_trunc('month', CURRENT_DATE) AND payment_date < date_trunc('month', CURRENT_DATE) + INTERVAL '1 month' 
+        ), 0) AS monthly_revenue
+      FROM payments
+      WHERE user_id = $1
+      `,
+      [userId]
+    );
+
+    return camelcaseKeys(rows[0]);
   }
 }

@@ -7,17 +7,13 @@ import {
   paymentQuerySchema,
   recordPaymentSchema,
 } from "../schemas/payment.schema.js";
-import { createPayment, getAllPayments } from "../controllers/payment.controller.js";
+import {
+  createPayment,
+  getAllPayments,
+  getPaymentStats,
+} from "../controllers/payment.controller.js";
 
 const router = express.Router();
-
-router.post(
-  "/:id",
-  protect,
-  apiLimiter,
-  validateRequest({ body: recordPaymentSchema, params: paymentIdParamsSchema }),
-  createPayment
-);
 
 router.get(
   "/",
@@ -25,6 +21,16 @@ router.get(
   apiLimiter,
   validateRequest({ query: paymentQuerySchema }),
   getAllPayments
+);
+
+router.get("/stats", protect, apiLimiter, getPaymentStats);
+
+router.post(
+  "/:id",
+  protect,
+  apiLimiter,
+  validateRequest({ body: recordPaymentSchema, params: paymentIdParamsSchema }),
+  createPayment
 );
 
 export default router;

@@ -2,6 +2,7 @@ import { Request } from "express";
 import { PaymentInput } from "../types/payment.types.js";
 import PaymentModel from "../models/payment.model.js";
 import db from "../config/db.js";
+import { Decimal } from "decimal.js";
 
 export default class PaymentService {
   static async handleCreatePayment(req: Request) {
@@ -65,5 +66,11 @@ export default class PaymentService {
       },
       payments: paymentData,
     };
+  }
+
+  static async handleGetPaymentStats(userId: string) {
+    const stats = await PaymentModel.findPaymentsByUserId(userId);
+
+    return stats;
   }
 }
