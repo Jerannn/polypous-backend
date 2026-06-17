@@ -69,8 +69,6 @@ export default class PaymentService {
   }
 
   static async handleGetPaymentStats(userId: string) {
-    const stats = await PaymentModel.findPaymentsByUserId(userId);
-
-    return stats;
+    return await PaymentModel.findPaymentsByUserId(userId);
   }
 }
