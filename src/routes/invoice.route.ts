@@ -20,6 +20,7 @@ const router = express.Router();
 
 router.post("/", protect, apiLimiter, validateRequest({ body: invoiceSchema }), createInvoice);
 router.get("/", protect, apiLimiter, validateRequest({ query: invoiceQuerySchema }), getInvoices);
+
 router.get(
   "/:id",
   protect,
@@ -45,4 +46,5 @@ router.delete(
 );
 
 router.get("/:id/pdf", protect, apiLimiter, downloadInvoicePDF);
+
 export default router;

@@ -206,4 +206,73 @@ export default class InvoiceModel {
 
     return rowCount !== null && rowCount > 0;
   }
+
+  static async getInvoiceStats(userId: string) {
+    const { rows } = await db.query(
+      `
+      SELECT
+        COUNT(*) FILTER (WHERE status = 'PAID') AS paid_count,
+        COUNT(*) FILTER (WHERE status = 'UNPAID') AS unpaid_count,
+        COUNT(*) FILTER (WHERE status = 'OVERDUE') AS overdue_count,
+        (
+          SELECT COALESCE(SUM(amount), 0)
+          FROM payments
+          WHERE user_id = $1
+                AND payment_date >= date_trunc('month', CURRENT_DATE)
+                AND payment_date < date_trunc('month', CURRENT_DATE) + INTERVAL '1 month'
+        ) AS total_monthly_revenue,
+
+        (
+          SELECT
+            COALESCE(
+              JSON_AGG(
+                JSON_BUILD_OBJECT(
+                  'month', month,
+                  'income', total
+                )
+              ),
+              '[]'::json
+            ) AS monthly_payments
+          FROM
+            (
+              SELECT
+                TO_CHAR(DATE_TRUNC('month', payment_date), 'Mon YYYY') AS month,
+                SUM(amount) AS total
+              FROM payments
+              WHERE user_id = $1
+              GROUP BY DATE_TRUNC('month', payment_date)
+              ORDER BY DATE_TRUNC('month', payment_date) DESC
+              LIMIT 12
+            ) 
+        ) AS monthly_income,
+
+        (
+          SELECT
+            COALESCE(
+              JSON_AGG(
+                JSON_BUILD_OBJECT(
+                  'status', status,
+                  'count', count
+                )
+              ),
+              '[]'::json
+            )
+          FROM (
+            SELECT status, COUNT(*) AS count
+            FROM invoices
+            WHERE user_id = $1
+            GROUP BY status
+          )
+        ) AS invoice_status
+
+      
+
+      FROM invoices
+      WHERE user_id = $1
+      `,
+      [userId]
+    );
+
+    return camelcaseKeys(rows[0]);
+  }
 }
