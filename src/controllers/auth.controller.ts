@@ -84,3 +84,14 @@ export const getOtp = catchAsync(async (req: Request, res: Response, _next: Next
     data: { otp },
   });
 });
+
+export const logout = catchAsync(async (req: Request, res: Response, _next: NextFunction) => {
+  res.cookie("jwt", "loggedout", {
+    expires: new Date(Date.now() + 10 * 1000),
+    httpOnly: true,
+  });
+
+  res.status(HTTP_STATUS.OK).json({
+    status: "success",
+  });
+});

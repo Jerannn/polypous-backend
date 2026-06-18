@@ -2,6 +2,7 @@ import express from "express";
 import {
   getOtp,
   login,
+  logout,
   register,
   resendVerification,
   verifyRegistration,
@@ -14,11 +15,13 @@ import {
   otpLimiter,
   publicAuthLimiter,
 } from "../middlewares/rate-limiter.middleware.js";
+import { protect } from "../middlewares/auth.middleware.js";
 
 const router = express.Router();
 
 router.post("/register", publicAuthLimiter, validateRequest({ body: registerSchema }), register);
 router.post("/login", loginLimiter, validateRequest({ body: loginSchema }), login);
+router.post("/logout", protect, publicAuthLimiter, logout);
 
 //  EMAIL VERIFICATION
 router.get("/email/otp", otpLimiter, getOtp);
