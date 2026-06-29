@@ -1,4 +1,4 @@
-import { NextFunction, Request } from "express";
+import { Request } from "express";
 import db from "../config/db.js";
 import InvoiceModel from "../models/invoice.model.js";
 import { InvoiceItemInput, InvoiceInput } from "../types/invoice.types.js";

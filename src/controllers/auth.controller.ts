@@ -9,19 +9,21 @@ import { OTPService } from "../services/otp.service.js";
 import AuthModel from "../models/auth.model.js";
 import { getOtpSchema } from "../schemas/otp.schema.js";
 
-const sendAuthResponse = (user: User, statusCode: number, res: Response) => {
+const cookieOptions = (): CookieOptions => {
   const isProduction = env.STAGE === "production";
 
-  const token = generateToken(user.id);
-
-  const cookieOptions: CookieOptions = {
-    expires: new Date(Date.now() + Number(env.JWT_COOKIE_EXPIRES_IN) * 24 * 60 * 60 * 1000),
+  return {
+    maxAge: 30 * 24 * 60 * 60 * 1000,
     httpOnly: true,
     secure: isProduction,
     sameSite: isProduction ? "none" : "lax",
   };
+};
 
-  res.cookie("jwt", token, cookieOptions);
+const sendAuthResponse = (user: User, statusCode: number, res: Response) => {
+  const token = generateToken(user.id);
+
+  res.cookie("jwt", token, { ...cookieOptions });
 
   res.status(statusCode).json({
     status: "success",
@@ -86,10 +88,7 @@ export const getOtp = catchAsync(async (req: Request, res: Response, _next: Next
 });
 
 export const logout = catchAsync(async (req: Request, res: Response, _next: NextFunction) => {
-  res.cookie("jwt", "loggedout", {
-    expires: new Date(Date.now() + 10 * 1000),
-    httpOnly: true,
-  });
+  res.cookie("jwt", "", { ...cookieOptions, maxAge: 1 });
 
   res.status(HTTP_STATUS.OK).json({
     status: "success",

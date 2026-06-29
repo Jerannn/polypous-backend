@@ -21,7 +21,7 @@ const router = express.Router();
 
 router.post("/register", publicAuthLimiter, validateRequest({ body: registerSchema }), register);
 router.post("/login", loginLimiter, validateRequest({ body: loginSchema }), login);
-router.post("/logout", protect, publicAuthLimiter, logout);
+router.post("/logout", publicAuthLimiter, logout);
 
 //  EMAIL VERIFICATION
 router.get("/email/otp", otpLimiter, getOtp);

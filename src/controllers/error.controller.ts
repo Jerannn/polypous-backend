@@ -4,7 +4,6 @@ import AppError from "../utils/appError.js";
 import { HTTP_STATUS } from "../utils/constants.js";
 import { MESSAGES } from "../utils/constants.js";
 import camelcaseKeys from "camelcase-keys";
-import camelCase from "camelcase";
 
 interface PostgresError extends Error {
   detail: string;

@@ -20,3 +20,8 @@ export type User = {
   created_at: Date;
   updated_at: Date;
 };
+
+export type UserWithoutSensitive = Omit<
+  User,
+  "passwordHash" | "passwordResetToken" | "passwordResetExpiresAt"
+>;
