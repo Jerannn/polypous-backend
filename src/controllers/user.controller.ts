@@ -45,3 +45,14 @@ export const getMyBusiness = catchAsync(
     });
   }
 );
+
+export const verifyPassword = catchAsync(
+  async (req: Request, res: Response, _next: NextFunction) => {
+    const verified = await UserService.handleVerifyPassword(req.user.id, req.body.password);
+
+    res.status(HTTP_STATUS.OK).json({
+      status: "success",
+      data: { verified },
+    });
+  }
+);

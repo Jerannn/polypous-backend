@@ -13,6 +13,7 @@ export const HTTP_STATUS = {
 export const MESSAGES = {
   REGISTRATION_FAILED: "Registration failed, please try again",
   INVALID_CREDENTIALS: "Incorrect email or password, please try again",
+  INVALID_PASSWORD: "Incorrect password, please try again",
   AUTH_FAILED: "Authentication failed. Please log in again.",
   INVALID_OTP:
     "Invalid code or has expired. Please check the code sent to your email and try again.",

@@ -16,3 +16,7 @@ export const businessSchema = z.object({
   address: z.string().min(1, { message: "Business address is required" }),
   phone: z.string().min(1, { message: "Business phone is required" }),
 });
+
+export const verifyPasswordSchema = z.object({
+  password: z.string().min(6, "Password must be at least 6 characters long"),
+});
