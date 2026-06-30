@@ -16,10 +16,32 @@ export const getMe = catchAsync(async (req: Request, res: Response, _next: NextF
 });
 
 export const updateMe = catchAsync(async (req: Request, res: Response, _next: NextFunction) => {
-  const updatedUser = await UserService.updateUser(req);
+  const updatedUser = await UserService.handleUpdateUser(req);
 
   res.status(HTTP_STATUS.OK).json({
     status: "success",
     data: { user: updatedUser },
   });
 });
+
+export const updateMyBusiness = catchAsync(
+  async (req: Request, res: Response, _next: NextFunction) => {
+    const updatedBusiness = await UserService.handleUpdateBusiness(req);
+
+    res.status(HTTP_STATUS.OK).json({
+      status: "success",
+      data: { business: updatedBusiness },
+    });
+  }
+);
+
+export const getMyBusiness = catchAsync(
+  async (req: Request, res: Response, _next: NextFunction) => {
+    const business = await UserService.handleGetBusiness(req.user.id);
+
+    res.status(HTTP_STATUS.OK).json({
+      status: "success",
+      data: { business },
+    });
+  }
+);

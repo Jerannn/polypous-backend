@@ -15,7 +15,6 @@ DROP TABLE IF EXISTS users CASCADE;
 
 -- Drop enums
 DROP TYPE IF EXISTS invoice_status CASCADE;
-DROP TYPE IF EXISTS payment_method CASCADE;
 DROP TYPE IF EXISTS subscription_plan CASCADE;
 DROP TYPE IF EXISTS subscription_status CASCADE;
 
@@ -37,13 +36,6 @@ CREATE TYPE invoice_status AS ENUM (
   'OVERDUE',
   'CANCELLED'
 );
-
--- CREATE TYPE payment_method AS ENUM (
---   'CASH',
---   'BANK',
---   'GCASH',
---   'PAYPAL'
--- );
 
 CREATE TYPE subscription_plan AS ENUM (
   'FREE',
@@ -118,12 +110,8 @@ CREATE TABLE IF NOT EXISTS clients (
 
 CREATE INDEX IF NOT EXISTS idx_clients_user_id ON clients(user_id);
 CREATE INDEX IF NOT EXISTS idx_clients_name_trgm ON clients USING gin (name gin_trgm_ops);
-CREATE INDEX IF NOT EXISTS idx_clients_user_created_id
-ON clients (
-  user_id,
-  created_at DESC,
-  id DESC
-);
+CREATE INDEX IF NOT EXISTS idx_clients_user_created_id ON clients (user_id, created_at DESC, id DESC);
+
 -- =========================================
 -- INVOICES
 -- =========================================
@@ -179,8 +167,7 @@ CREATE TABLE IF NOT EXISTS invoice_items (
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
-CREATE INDEX IF NOT EXISTS idx_invoice_items_invoice_id
-ON invoice_items(invoice_id);
+CREATE INDEX IF NOT EXISTS idx_invoice_items_invoice_id ON invoice_items(invoice_id);
 
 -- =========================================
 -- PAYMENTS
@@ -208,8 +195,26 @@ CREATE TABLE IF NOT EXISTS payments (
 CREATE INDEX IF NOT EXISTS idx_payments_invoice_id ON payments(invoice_id);
 CREATE INDEX IF NOT EXISTS idx_payments_user_id ON payments(user_id);
 CREATE INDEX IF NOT EXISTS idx_invoice_number_trgm ON invoices USING gin (invoice_number gin_trgm_ops);
-CREATE INDEX idx_payment_reference_trgm ON payments USING gin(reference_number gin_trgm_ops);
-CREATE INDEX idx_payments_user_date ON payments (user_id, payment_date);
+CREATE INDEX IF NOT EXISTS idx_payment_reference_trgm ON payments USING gin(reference_number gin_trgm_ops);
+CREATE INDEX IF NOT EXISTS idx_payments_user_date ON payments (user_id, payment_date);
+
+-- =========================================
+-- BUSINESS 
+-- =========================================
+
+CREATE TABLE IF NOT EXISTS businesses (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  name VARCHAR(150) NOT NULL,
+  email CITEXT NOT NULL UNIQUE,
+  phone VARCHAR(50) NOT NULL,
+  address TEXT NOT NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+  UNIQUE (user_id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_business_user_id ON businesses(user_id);
 
 -- =========================================
 -- INVOICE STATUS HISTORY
@@ -225,8 +230,7 @@ CREATE TABLE IF NOT EXISTS invoice_status_history (
   changed_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
-CREATE INDEX IF NOT EXISTS idx_invoice_status_history_invoice_id
-ON invoice_status_history(invoice_id);
+CREATE INDEX IF NOT EXISTS idx_invoice_status_history_invoice_id ON invoice_status_history(invoice_id);
 
 -- =========================================
 -- USER MONTHLY STATS
@@ -250,8 +254,7 @@ CREATE TABLE IF NOT EXISTS user_monthly_stats (
   UNIQUE(user_id, year, month)
 );
 
-CREATE INDEX IF NOT EXISTS idx_user_monthly_stats_user_id
-ON user_monthly_stats(user_id);
+CREATE INDEX IF NOT EXISTS idx_user_monthly_stats_user_id ON user_monthly_stats(user_id);
 
 -- =========================================
 -- SUBSCRIPTIONS
@@ -278,11 +281,9 @@ CREATE TABLE IF NOT EXISTS subscriptions (
   )
 );
 
-CREATE INDEX IF NOT EXISTS idx_subscriptions_user_id
-ON subscriptions(user_id);
+CREATE INDEX IF NOT EXISTS idx_subscriptions_user_id ON subscriptions(user_id);
 
-CREATE INDEX IF NOT EXISTS idx_subscriptions_status
-ON subscriptions(status);
+CREATE INDEX IF NOT EXISTS idx_subscriptions_status ON subscriptions(status);
 
 -- =========================================
 -- AUDIT LOGS
@@ -305,11 +306,9 @@ CREATE TABLE IF NOT EXISTS audit_logs (
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
-CREATE INDEX IF NOT EXISTS idx_audit_logs_user_id
-ON audit_logs(user_id);
+CREATE INDEX IF NOT EXISTS idx_audit_logs_user_id ON audit_logs(user_id);
 
-CREATE INDEX IF NOT EXISTS idx_audit_logs_entity
-ON audit_logs(entity_type, entity_id);
+CREATE INDEX IF NOT EXISTS idx_audit_logs_entity ON audit_logs(entity_type, entity_id);
 
 -- =========================================
 -- UPDATED_AT AUTO-UPDATE TRIGGER
