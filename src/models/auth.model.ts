@@ -50,7 +50,7 @@ export default class AuthModel {
     return camelcaseKeys(rows[0]);
   }
 
-  static async findById(id: number): Promise<User> {
+  static async findById(id: string): Promise<User> {
     const { rows } = await db.query(
       `
       SELECT *
