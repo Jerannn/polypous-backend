@@ -45,4 +45,14 @@ export default class UserService {
 
     return { verified: true };
   }
+
+  static async handleDeleteUser(userId: string) {
+    const user = await AuthModel.findById(userId);
+
+    if (!user) {
+      throw new AppError("User not found.", HTTP_STATUS.NOT_FOUND);
+    }
+
+    await AuthModel.deleteById(userId);
+  }
 }
