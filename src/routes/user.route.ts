@@ -2,6 +2,7 @@ import express from "express";
 import { protect } from "../middlewares/auth.middleware.js";
 import { apiLimiter } from "../middlewares/rate-limiter.middleware.js";
 import {
+  deleteMe,
   getMe,
   getMyBusiness,
   updateMe,
@@ -31,5 +32,7 @@ router.post(
   validateRequest({ body: verifyPasswordSchema }),
   verifyPassword
 );
+
+router.delete("/me", protect, apiLimiter, deleteMe);
 
 export default router;

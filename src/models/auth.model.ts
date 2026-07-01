@@ -62,4 +62,14 @@ export default class AuthModel {
 
     return camelcaseKeys(rows[0]);
   }
+
+  static async deleteById(id: string): Promise<void> {
+    await db.query(
+      `
+      DELETE FROM users
+      WHERE id = $1
+    `,
+      [id]
+    );
+  }
 }

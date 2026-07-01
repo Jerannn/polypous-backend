@@ -2,6 +2,7 @@ import { NextFunction, Response, Request } from "express";
 import catchAsync from "../utils/catchAsync.js";
 import { HTTP_STATUS } from "../utils/constants.js";
 import UserService from "../services/user.service.js";
+import { cookieOptions } from "./auth.controller.js";
 
 export const getMe = catchAsync(async (req: Request, res: Response, _next: NextFunction) => {
   // Remove sensitive information before sending the response
@@ -56,3 +57,13 @@ export const verifyPassword = catchAsync(
     });
   }
 );
+
+export const deleteMe = catchAsync(async (req: Request, res: Response, _next: NextFunction) => {
+  await UserService.handleDeleteUser(req.user.id);
+
+  res.cookie("jwt", "", { ...cookieOptions, maxAge: 1 });
+
+  res.status(HTTP_STATUS.OK).json({
+    status: "success",
+  });
+});

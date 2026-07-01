@@ -9,7 +9,7 @@ import { OTPService } from "../services/otp.service.js";
 import AuthModel from "../models/auth.model.js";
 import { getOtpSchema } from "../schemas/otp.schema.js";
 
-const cookieOptions = (): CookieOptions => {
+export const cookieOptions = (): CookieOptions => {
   const isProduction = env.STAGE === "production";
 
   return {
