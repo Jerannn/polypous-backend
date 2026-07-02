@@ -42,7 +42,7 @@ export const getMyBusiness = catchAsync(
 
     res.status(HTTP_STATUS.OK).json({
       status: "success",
-      data: { business },
+      data: { business: business || [] },
     });
   }
 );

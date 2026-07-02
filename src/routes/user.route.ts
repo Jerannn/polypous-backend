@@ -16,6 +16,8 @@ const router = express.Router();
 
 router.get("/me", protect, apiLimiter, getMe);
 router.patch("/me", protect, apiLimiter, validateRequest({ body: profileSchema }), updateMe);
+router.delete("/me", protect, apiLimiter, deleteMe);
+
 router.get("/me/business", protect, apiLimiter, getMyBusiness);
 router.put(
   "/me/business",
@@ -32,7 +34,5 @@ router.post(
   validateRequest({ body: verifyPasswordSchema }),
   verifyPassword
 );
-
-router.delete("/me", protect, apiLimiter, deleteMe);
 
 export default router;
