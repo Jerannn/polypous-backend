@@ -59,29 +59,15 @@ export default class DashboardModel {
   static async getInvoiceStatus(userId: string): Promise<InvoiceStatus[]> {
     const { rows } = await db.query(
       `
-        WITH status_list AS (
-            SELECT unnest(ARRAY['PAID', 'UNPAID', 'OVERDUE']) AS status
-        ),
-        counts AS (
-            SELECT status::text, COUNT(*) as count
-            FROM invoices
-            WHERE user_id = $1
-            GROUP BY status
-        )
-        SELECT
-            JSON_AGG(
-                JSON_BUILD_OBJECT(
-                    'status', s.status,
-                    'count', COALESCE(c.count, 0)
-                ) ORDER BY s.status
-            ) AS invoice_status
-        FROM status_list s
-        LEFT JOIN counts c ON c.status = s.status
+        SELECT status, COALESCE(COUNT(*), 0) AS count
+        FROM invoices
+        WHERE user_id = $1
+        GROUP BY status
         `,
       [userId]
     );
 
-    return camelcaseKeys(rows[0].invoice_status);
+    return camelcaseKeys(rows);
   }
 
   static async getRecentInvoices(userId: string): Promise<RecentInvoice[]> {

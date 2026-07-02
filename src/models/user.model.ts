@@ -54,6 +54,6 @@ export default class UserModel {
       [userId]
     );
 
-    return camelcaseKeys(rows[0]);
+    return rows[0];
   }
 }
