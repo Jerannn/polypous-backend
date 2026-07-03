@@ -61,7 +61,7 @@ export const verifyPassword = catchAsync(
 export const deleteMe = catchAsync(async (req: Request, res: Response, _next: NextFunction) => {
   await UserService.handleDeleteUser(req.user.id);
 
-  res.cookie("jwt", "", { ...cookieOptions, maxAge: 1 });
+  res.cookie("jwt", "", { ...cookieOptions(), maxAge: 1 });
 
   res.status(HTTP_STATUS.OK).json({
     status: "success",

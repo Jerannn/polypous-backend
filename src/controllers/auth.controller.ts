@@ -23,7 +23,7 @@ export const cookieOptions = (): CookieOptions => {
 const sendAuthResponse = (user: User, statusCode: number, res: Response) => {
   const token = generateToken(user.id);
 
-  res.cookie("jwt", token, { ...cookieOptions });
+  res.cookie("jwt", token, cookieOptions());
 
   res.status(statusCode).json({
     status: "success",
@@ -88,7 +88,7 @@ export const getOtp = catchAsync(async (req: Request, res: Response, _next: Next
 });
 
 export const logout = catchAsync(async (req: Request, res: Response, _next: NextFunction) => {
-  res.cookie("jwt", "", { ...cookieOptions, maxAge: 1 });
+  res.cookie("jwt", "", { ...cookieOptions(), maxAge: 1 });
 
   res.status(HTTP_STATUS.OK).json({
     status: "success",
