@@ -11,10 +11,19 @@ export type Client = ClientPayload & {
 };
 
 export type ClientWithAnalytics = Client & {
+  invoiceHistory: InvoiceHistory[];
+  invoiceNumber: string;
   invoiceCount: number;
   totalPaid: number;
   totalUnpaid: number;
   totalCount: number;
+};
+
+type InvoiceHistory = {
+  invoiceNumber: string;
+  status: string;
+  dueDate: string;
+  total: number;
 };
 
 export type Options = {
