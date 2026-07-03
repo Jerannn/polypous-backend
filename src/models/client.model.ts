@@ -31,6 +31,7 @@ export default class ClientModel {
           COALESCE(inv.invoice_count, 0)::INT AS invoice_count,
           COALESCE(inv.total_paid, 0)::INT AS total_paid,
           COALESCE(inv.total_unpaid, 0)::INT AS total_unpaid,
+          COALESCE(inv.invoices_history, '[]'::JSON) AS invoices_history,
           COUNT(*) OVER()::INT AS total_count
 
         FROM clients c
@@ -39,9 +40,18 @@ export default class ClientModel {
             client_id,
             COUNT(*) AS invoice_count,
             SUM(CASE WHEN status = 'PAID' THEN total ELSE 0 END) AS total_paid,
-            SUM(CASE WHEN status = 'UNPAID' THEN total ELSE 0 END) AS total_unpaid
+            SUM(CASE WHEN status = 'UNPAID' THEN total ELSE 0 END) AS total_unpaid,
+            JSON_AGG(
+              JSON_BUILD_OBJECT(
+                'invoice_number', invoice_number,
+                'status', status,
+                'due_date', due_date,
+                'total', total
+              )
+            ) AS invoices_history
           FROM invoices
-          GROUP BY client_id
+          GROUP BY client_id, created_at
+          ORDER BY created_at DESC
         ) inv ON inv.client_id = c.id
         
         WHERE 
@@ -54,7 +64,7 @@ export default class ClientModel {
       [userId, limit, offset, search]
     );
 
-    return camelcaseKeys(rows);
+    return camelcaseKeys(rows, { deep: true });
   }
 
   static async update(id: string, payload: ClientPayload): Promise<Client> {

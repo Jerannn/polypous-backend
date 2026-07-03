@@ -39,7 +39,7 @@ function getStatusBadge(status: string) {
   const normalized = status.toUpperCase();
   let className = "cancelled";
   let label = "Cancelled";
-  
+
   if (normalized === "PAID") {
     className = "paid";
     label = "Paid";
@@ -50,24 +50,23 @@ function getStatusBadge(status: string) {
     className = "overdue";
     label = "Overdue";
   }
-  
+
   return `<span class="status-badge ${className}"><span class="status-dot"></span>${label}</span>`;
 }
 
 export function buildInvoiceHTML(invoice: InvoiceWithItemsAndClient) {
-  const currency = invoice.freelancer.currency || "USD";
-  
+  const currency = "USD";
+
   const taxAmount = (Number(invoice.subtotal) * Number(invoice.tax)) / 100;
-  
-  const amountPaid = invoice.payments 
-    ? invoice.payments.reduce((acc, p) => acc + Number(p.amount), 0) 
+
+  const amountPaid = invoice.payments
+    ? invoice.payments.reduce((acc, p) => acc + Number(p.amount), 0)
     : 0;
-    
+
   const balance = Math.max(0, Number(invoice.total) - amountPaid);
-  
-  const percentage = Number(invoice.total) > 0 
-    ? Math.min(100, (amountPaid / Number(invoice.total)) * 100) 
-    : 0;
+
+  const percentage =
+    Number(invoice.total) > 0 ? Math.min(100, (amountPaid / Number(invoice.total)) * 100) : 0;
   const percentageStr = percentage.toFixed(2);
 
   return `
@@ -603,7 +602,7 @@ export function buildInvoiceHTML(invoice: InvoiceWithItemsAndClient) {
               <div class="party-title">From</div>
               <div class="party-name">Freelancer</div>
               <div class="party-details">
-                <div>${invoice.freelancer.fullName}</div>
+                <div>${invoice.freelancer.name}</div>
                 <div>${invoice.freelancer.email}</div>
               </div>
             </div>
@@ -630,14 +629,18 @@ export function buildInvoiceHTML(invoice: InvoiceWithItemsAndClient) {
               </tr>
             </thead>
             <tbody>
-              ${invoice.items.map((item: any) => `
+              ${invoice.items
+                .map(
+                  (item: any) => `
                 <tr>
                   <td class="desc">${item.description}</td>
                   <td class="right">${item.quantity}</td>
                   <td class="right">${formatCurrency(item.unitPrice, currency)}</td>
                   <td class="right amount">${formatCurrency(item.unitPrice * item.quantity, currency)}</td>
                 </tr>
-              `).join("")}
+              `
+                )
+                .join("")}
             </tbody>
           </table>
           
@@ -659,12 +662,16 @@ export function buildInvoiceHTML(invoice: InvoiceWithItemsAndClient) {
           </div>
           
           <!-- Notes -->
-          ${invoice.notes ? `
+          ${
+            invoice.notes
+              ? `
             <div class="notes-section">
               <div class="notes-label">Notes & Terms</div>
               <div class="notes-content">${invoice.notes}</div>
             </div>
-          ` : ""}
+          `
+              : ""
+          }
         </div>
         
         <!-- Sidebar -->
@@ -698,8 +705,11 @@ export function buildInvoiceHTML(invoice: InvoiceWithItemsAndClient) {
             </div>
             
             <div class="payment-records-list">
-              ${invoice.payments && invoice.payments.length > 0 ? 
-                invoice.payments.map((p: any) => `
+              ${
+                invoice.payments && invoice.payments.length > 0
+                  ? invoice.payments
+                      .map(
+                        (p: any) => `
                   <div class="payment-record-card">
                     <div class="payment-icon-wrapper">
                       ${getPaymentIcon(p.paymentMethod)}
@@ -713,8 +723,10 @@ export function buildInvoiceHTML(invoice: InvoiceWithItemsAndClient) {
                       ${p.referenceNumber ? `<div class="payment-card-ref">Ref: ${p.referenceNumber}</div>` : ""}
                     </div>
                   </div>
-                `).join("")
-                : `
+                `
+                      )
+                      .join("")
+                  : `
                   <div class="empty-history">No payment records found.</div>
                 `
               }
@@ -727,4 +739,3 @@ export function buildInvoiceHTML(invoice: InvoiceWithItemsAndClient) {
   </html>
   `;
 }
-

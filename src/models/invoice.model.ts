@@ -63,28 +63,29 @@ export default class InvoiceModel {
     const { rows } = await db.query(
       `
       SELECT
-        id,
-        user_id,
-        invoice_number,
-        status,
-        issue_date,
-        due_date,
-        total,
-        subtotal,
-        tax,
-        notes,
-        created_at,
-        updated_at,
-        (
-          SELECT name
-          FROM clients
-          WHERE id = client_id
-        ) AS client_name,
+        invoices.id,
+        invoices.user_id,
+        invoices.invoice_number,
+        invoices.status,
+        invoices.issue_date,
+        invoices.due_date,
+        invoices.total,
+        invoices.subtotal,
+        invoices.tax,
+        invoices.notes,
+        invoices.created_at,
+        invoices.updated_at,
+        c.name as client_name,
         COUNT(*) OVER()::INT as total_count
         
       FROM invoices
-      WHERE user_id = $1 
-            AND ($4::text = '' OR invoice_number ILIKE '%'|| $4 || '%')
+      LEFT JOIN clients c ON invoices.client_id = c.id
+      WHERE invoices.user_id = $1 
+            AND (
+              $4::text = '' 
+              OR invoices.invoice_number ILIKE '%'|| $4 || '%'
+              OR c.name ILIKE '%'|| $4 || '%'
+            )
       ORDER BY created_at DESC
       LIMIT $2
       OFFSET $3
