@@ -1,4 +1,5 @@
 import camelcaseKeys from "camelcase-keys";
+
 import db from "../config/db.js";
 import { InvoiceStatus, MonthlyIncome, RecentInvoice, Stats } from "../types/dashboard.types.js";
 

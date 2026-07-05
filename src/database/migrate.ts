@@ -1,6 +1,7 @@
+import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
-import fs from "fs";
+
 import db from "../config/db.js";
 
 const __filePath = fileURLToPath(import.meta.url);

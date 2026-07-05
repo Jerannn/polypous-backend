@@ -1,6 +1,5 @@
 import express from "express";
-import { protect } from "../middlewares/auth.middleware.js";
-import { apiLimiter } from "../middlewares/rate-limiter.middleware.js";
+
 import {
   deleteMe,
   getMe,
@@ -9,6 +8,8 @@ import {
   updateMyBusiness,
   verifyPassword,
 } from "../controllers/user.controller.js";
+import { protect } from "../middlewares/auth.middleware.js";
+import { apiLimiter } from "../middlewares/rate-limiter.middleware.js";
 import { validateRequest } from "../middlewares/validate.request.middleware.js";
 import { businessSchema, profileSchema, verifyPasswordSchema } from "../schemas/user.schema.js";
 

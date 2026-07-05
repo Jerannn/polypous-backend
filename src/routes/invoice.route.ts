@@ -1,12 +1,5 @@
 import express from "express";
-import { protect } from "../middlewares/auth.middleware.js";
-import { apiLimiter } from "../middlewares/rate-limiter.middleware.js";
-import { validateRequest } from "../middlewares/validate.request.middleware.js";
-import {
-  invoiceIdParamsSchema,
-  invoiceQuerySchema,
-  invoiceSchema,
-} from "../schemas/invoice.schema.js";
+
 import {
   createInvoice,
   deleteInvoice,
@@ -15,6 +8,14 @@ import {
   getInvoices,
   updateInvoice,
 } from "../controllers/invoice.controller.js";
+import { protect } from "../middlewares/auth.middleware.js";
+import { apiLimiter } from "../middlewares/rate-limiter.middleware.js";
+import { validateRequest } from "../middlewares/validate.request.middleware.js";
+import {
+  invoiceIdParamsSchema,
+  invoiceQuerySchema,
+  invoiceSchema,
+} from "../schemas/invoice.schema.js";
 
 const router = express.Router();
 

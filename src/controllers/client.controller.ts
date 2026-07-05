@@ -1,6 +1,7 @@
 import { NextFunction, Request, Response } from "express";
-import catchAsync from "../utils/catchAsync.js";
+
 import ClientService from "../services/client.service.js";
+import catchAsync from "../utils/catchAsync.js";
 import { HTTP_STATUS } from "../utils/constants.js";
 
 export const createClient = catchAsync(async (req: Request, res: Response, _next: NextFunction) => {

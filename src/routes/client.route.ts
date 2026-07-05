@@ -1,4 +1,5 @@
 import express from "express";
+
 import {
   createClient,
   deleteClient,
@@ -7,14 +8,14 @@ import {
   updateClient,
 } from "../controllers/client.controller.js";
 import { protect } from "../middlewares/auth.middleware.js";
+import { apiLimiter } from "../middlewares/rate-limiter.middleware.js";
 import { validateRequest } from "../middlewares/validate.request.middleware.js";
 import {
-  clientSchema,
   clientParamsSchema,
-  querySchema,
+  clientSchema,
   queryOptionsSchema,
+  querySchema,
 } from "../schemas/client.schema.js";
-import { apiLimiter } from "../middlewares/rate-limiter.middleware.js";
 const router = express.Router();
 
 router.post("/", protect, apiLimiter, validateRequest({ body: clientSchema }), createClient);

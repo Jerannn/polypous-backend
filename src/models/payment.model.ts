@@ -1,7 +1,8 @@
 import camelcaseKeys from "camelcase-keys";
+import { PoolClient } from "pg";
+
 import db from "../config/db.js";
 import { Payment, PaymentInput, PaymentListItem, PaymentStats } from "../types/payment.types.js";
-import { PoolClient } from "pg";
 
 export default class PaymentModel {
   static async insert(

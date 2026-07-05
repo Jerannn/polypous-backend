@@ -1,10 +1,11 @@
+import env from "../config/env.js";
 import redis from "../lib/redis/redis.client.js";
 import { redisKeys } from "../lib/redis/redis.keys.js";
 import AuthModel from "../models/auth.model.js";
 import { Register, User } from "../types/auth.types.js";
 import AppError from "../utils/appError.js";
 import { HTTP_STATUS, MESSAGES, OTP } from "../utils/constants.js";
-import { generateOTP, hashSecret, verifySecret } from "../utils/helper.js";
+import { generateOTP, hashSecret, verifySecret, verifyToken } from "../utils/helper.js";
 
 export default class AuthService {
   static async createAccount(data: Register): Promise<User> {
@@ -48,11 +49,33 @@ export default class AuthService {
       });
     }
 
-    user.passwordHash = undefined;
-    user.passwordResetToken = undefined;
-    user.passwordResetExpiresAt = undefined;
+    return user;
+  }
+
+  static async handleRefreshToken(token: string): Promise<User> {
+    if (!token) {
+      throw new AppError(MESSAGES.AUTH_FAILED, HTTP_STATUS.UNAUTHORIZED);
+    }
+
+    const payload = verifyToken(token, env.JWT_REFRESH_SECRET as string);
+
+    const user = await AuthModel.findById(payload.userId);
+
+    if (!user || !(await verifySecret(token, user.refreshToken as string))) {
+      throw new AppError(MESSAGES.AUTH_FAILED, HTTP_STATUS.UNAUTHORIZED);
+    }
 
     return user;
+  }
+
+  static async handleLogout(token: string) {
+    if (!token) {
+      throw new AppError(MESSAGES.AUTH_FAILED, HTTP_STATUS.UNAUTHORIZED);
+    }
+
+    const payload = verifyToken(token, env.JWT_REFRESH_SECRET as string);
+
+    await AuthModel.removeRefreshToken(payload.userId);
   }
 
   //   static async requestPasswordReset(email: string, res: Response) {

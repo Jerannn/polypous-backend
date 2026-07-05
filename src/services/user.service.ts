@@ -1,9 +1,10 @@
 import { Request } from "express";
-import UserModel from "../models/user.model.js";
+
 import AuthModel from "../models/auth.model.js";
-import { verifySecret } from "../utils/helper.js";
+import UserModel from "../models/user.model.js";
 import AppError from "../utils/appError.js";
 import { HTTP_STATUS, MESSAGES } from "../utils/constants.js";
+import { verifySecret } from "../utils/helper.js";
 
 export default class UserService {
   static async handleUpdateUser(req: Request) {

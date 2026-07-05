@@ -1,4 +1,5 @@
 import { Redis } from "@upstash/redis";
+
 import env from "../../config/env.js";
 
 const redis = new Redis({

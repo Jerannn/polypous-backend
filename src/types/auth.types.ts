@@ -1,4 +1,5 @@
 import { z } from "zod";
+
 import { registerSchema } from "../schemas/auth.schema.js";
 
 export type Register = z.infer<typeof registerSchema>;
@@ -15,6 +16,7 @@ export type User = {
   emailVerifiedAt: Date | null;
   passwordResetToken: string | undefined;
   passwordResetExpiresAt: Date | undefined;
+  refreshToken: string | undefined;
   isActive: boolean;
   lastLoginAt: Date | null;
   created_at: Date;

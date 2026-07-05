@@ -1,7 +1,8 @@
 import express from "express";
+
+import { getOverview } from "../controllers/dashboard.controller.js";
 import { protect } from "../middlewares/auth.middleware.js";
 import { apiLimiter } from "../middlewares/rate-limiter.middleware.js";
-import { getOverview } from "../controllers/dashboard.controller.js";
 
 const router = express.Router();
 

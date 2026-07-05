@@ -1,6 +1,7 @@
-import { NextFunction, Response, Request } from "express";
-import catchAsync from "../utils/catchAsync.js";
+import { NextFunction, Request,Response } from "express";
+
 import DashboardService from "../services/dashboard.service.js";
+import catchAsync from "../utils/catchAsync.js";
 import { HTTP_STATUS } from "../utils/constants.js";
 
 export const getOverview = catchAsync(async (req: Request, res: Response, _next: NextFunction) => {

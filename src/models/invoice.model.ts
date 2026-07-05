@@ -1,6 +1,7 @@
 import camelcaseKeys from "camelcase-keys";
-import db from "../config/db.js";
 import { PoolClient } from "pg";
+
+import db from "../config/db.js";
 import {
   Invoice,
   InvoiceInput,
