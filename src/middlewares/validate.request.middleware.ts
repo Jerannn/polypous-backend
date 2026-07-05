@@ -1,7 +1,8 @@
 import { NextFunction, Request, Response } from "express";
+import { ZodError, ZodType } from "zod";
+
 import AppError from "../utils/appError.js";
 import { HTTP_STATUS } from "../utils/constants.js";
-import { ZodError, ZodType } from "zod";
 
 export const validateRequest =
   ({ body, query, params }: { body?: ZodType; query?: ZodType; params?: ZodType }) =>

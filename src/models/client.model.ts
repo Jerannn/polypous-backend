@@ -1,4 +1,5 @@
 import camelcaseKeys from "camelcase-keys";
+
 import db from "../config/db.js";
 import { Client, ClientPayload, ClientWithAnalytics, Options } from "../types/client.types.js";
 
@@ -52,6 +53,7 @@ export default class ClientModel {
           FROM invoices
           GROUP BY client_id, created_at
           ORDER BY created_at DESC
+          LIMIT 5
         ) inv ON inv.client_id = c.id
         
         WHERE 

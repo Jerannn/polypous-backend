@@ -1,6 +1,7 @@
-import { Ratelimit, type Duration } from "@upstash/ratelimit";
+import { type Duration, Ratelimit } from "@upstash/ratelimit";
 import { NextFunction, Request, RequestHandler, Response } from "express";
 import { ipKeyGenerator } from "express-rate-limit";
+
 import redis from "../lib/redis/redis.client.js";
 import AppError from "../utils/appError.js";
 import catchAsync from "../utils/catchAsync.js";

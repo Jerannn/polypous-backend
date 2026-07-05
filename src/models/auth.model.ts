@@ -1,8 +1,8 @@
 import camelcaseKeys from "camelcase-keys";
+
 import db from "../config/db.js";
 import { Register, User } from "../types/auth.types.js";
 import { hashSecret } from "../utils/helper.js";
-import { ca } from "zod/locales";
 
 export default class AuthModel {
   static async create(data: Register): Promise<User> {
@@ -70,6 +70,26 @@ export default class AuthModel {
       WHERE id = $1
     `,
       [id]
+    );
+  }
+
+  static async saveRefreshTokenHash(userId: string, refreshTokenHashed: string): Promise<void> {
+    await db.query(
+      `
+      UPDATE users 
+      SET refresh_token = $1 
+      WHERE id = $2`,
+      [refreshTokenHashed, userId]
+    );
+  }
+
+  static async removeRefreshToken(userId: string): Promise<void> {
+    await db.query(
+      `
+      UPDATE users 
+      SET refresh_token = NULL
+      WHERE id = $1`,
+      [userId]
     );
   }
 }

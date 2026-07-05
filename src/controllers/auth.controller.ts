@@ -1,13 +1,15 @@
 import { CookieOptions, NextFunction, Request, Response } from "express";
-import catchAsync from "../utils/catchAsync.js";
+
 import env from "../config/env.js";
-import { User } from "../types/auth.types.js";
-import { generateToken } from "../utils/generateToken.js";
-import AuthService from "../services/auth.service.js";
-import { HTTP_STATUS } from "../utils/constants.js";
-import { OTPService } from "../services/otp.service.js";
 import AuthModel from "../models/auth.model.js";
 import { getOtpSchema } from "../schemas/otp.schema.js";
+import AuthService from "../services/auth.service.js";
+import { OTPService } from "../services/otp.service.js";
+import { User } from "../types/auth.types.js";
+import catchAsync from "../utils/catchAsync.js";
+import { HTTP_STATUS } from "../utils/constants.js";
+import { generateAccessToken, generateRefreshToken } from "../utils/generateToken.js";
+import { hashSecret } from "../utils/helper.js";
 
 export const cookieOptions = (): CookieOptions => {
   const isProduction = env.STAGE === "production";
@@ -17,17 +19,28 @@ export const cookieOptions = (): CookieOptions => {
     httpOnly: true,
     secure: isProduction,
     sameSite: isProduction ? "none" : "lax",
+    path: "/",
   };
 };
 
-const sendAuthResponse = (user: User, statusCode: number, res: Response) => {
-  const token = generateToken(user.id);
+export const sendAuthResponse = async (user: User, statusCode: number, res: Response) => {
+  const accessToken = generateAccessToken(user.id);
+  const refreshToken = generateRefreshToken(user.id);
 
-  res.cookie("jwt", token, cookieOptions());
+  const hashedRefreshToken = await hashSecret(refreshToken);
+  await AuthModel.saveRefreshTokenHash(user.id, hashedRefreshToken);
+
+  // remove sensitive data
+  user.passwordHash = undefined;
+  user.passwordResetToken = undefined;
+  user.passwordResetExpiresAt = undefined;
+  user.refreshToken = undefined;
+
+  res.cookie("refreshToken", refreshToken, cookieOptions());
 
   res.status(statusCode).json({
     status: "success",
-    token,
+    token: accessToken,
     data: { user },
   });
 };
@@ -55,8 +68,6 @@ export const verifyRegistration = catchAsync(
 
     const success = await OTPService.verifyOtp(email, otp, "register");
     const verifiedUser = await AuthModel.verifyUser(success.email);
-
-    verifiedUser.passwordHash = undefined;
 
     sendAuthResponse(verifiedUser, HTTP_STATUS.OK, res);
   }
@@ -87,8 +98,16 @@ export const getOtp = catchAsync(async (req: Request, res: Response, _next: Next
   });
 });
 
+export const refreshToken = catchAsync(async (req: Request, res: Response, _next: NextFunction) => {
+  const user = await AuthService.handleRefreshToken(req.cookies.refreshToken);
+
+  sendAuthResponse(user, HTTP_STATUS.OK, res);
+});
+
 export const logout = catchAsync(async (req: Request, res: Response, _next: NextFunction) => {
-  res.cookie("jwt", "", { ...cookieOptions(), maxAge: 1 });
+  await AuthService.handleLogout(req.cookies.refreshToken);
+
+  res.clearCookie("refreshToken", cookieOptions());
 
   res.status(HTTP_STATUS.OK).json({
     status: "success",

@@ -1,7 +1,8 @@
-import { NextFunction, Response, Request } from "express";
+import { NextFunction, Request, Response } from "express";
+
+import UserService from "../services/user.service.js";
 import catchAsync from "../utils/catchAsync.js";
 import { HTTP_STATUS } from "../utils/constants.js";
-import UserService from "../services/user.service.js";
 import { cookieOptions } from "./auth.controller.js";
 
 export const getMe = catchAsync(async (req: Request, res: Response, _next: NextFunction) => {
@@ -9,6 +10,7 @@ export const getMe = catchAsync(async (req: Request, res: Response, _next: NextF
   req.user.passwordHash = undefined;
   req.user.passwordResetToken = undefined;
   req.user.passwordResetExpiresAt = undefined;
+  req.user.refreshToken = undefined;
 
   res.status(HTTP_STATUS.OK).json({
     status: "success",

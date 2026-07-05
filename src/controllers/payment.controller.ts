@@ -1,6 +1,7 @@
 import { NextFunction, Request, Response } from "express";
-import catchAsync from "../utils/catchAsync.js";
+
 import PaymentService from "../services/payment.service.js";
+import catchAsync from "../utils/catchAsync.js";
 import { HTTP_STATUS } from "../utils/constants.js";
 
 export const createPayment = catchAsync(

@@ -1,18 +1,17 @@
 import { NextFunction, Request, Response } from "express";
-import jwt from "jsonwebtoken";
-import catchAsync from "../utils/catchAsync.js";
-import AppError from "../utils/appError.js";
+
 import env from "../config/env.js";
-import { HTTP_STATUS } from "../utils/constants.js";
 import AuthModel from "../models/auth.model.js";
+import AppError from "../utils/appError.js";
+import catchAsync from "../utils/catchAsync.js";
+import { HTTP_STATUS } from "../utils/constants.js";
+import { verifyToken } from "../utils/helper.js";
 
 export const protect = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
   // 1. Get token and check if it's there
   let token;
   if (req.headers.authorization && req.headers.authorization.startsWith("Bearer")) {
     token = req.headers.authorization.split(" ")[1];
-  } else if (req.cookies.jwt) {
-    token = req.cookies.jwt;
   }
 
   if (!token) {
@@ -22,14 +21,10 @@ export const protect = catchAsync(async (req: Request, res: Response, next: Next
   }
 
   // 2. Verification token
-  const decoded = jwt.verify(token, env.JWT_SECRET as string);
-
-  if (typeof decoded === "string" || !("userId" in decoded)) {
-    throw new Error("Invalid token payload");
-  }
+  const payload = verifyToken(token, env.JWT_ACCESS_SECRET as string);
 
   // 3. Check if user still exists
-  const currentUser = await AuthModel.findById(decoded.userId);
+  const currentUser = await AuthModel.findById(payload.userId);
 
   if (!currentUser) {
     return next(

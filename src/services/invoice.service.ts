@@ -1,14 +1,15 @@
-import { Request } from "express";
-import db from "../config/db.js";
-import InvoiceModel from "../models/invoice.model.js";
-import { InvoiceItemInput, InvoiceInput } from "../types/invoice.types.js";
-import { nanoid } from "nanoid";
-import AppError from "../utils/appError.js";
-import { buildInvoiceHTML } from "../utils/buildInvoiceHtml.js";
-import generate from "./pdf.service.js";
 // import { PdfService } from "./pdf.service.js";
 // import PDFService from "./pdf.service.js";
 import { Decimal } from "decimal.js";
+import { Request } from "express";
+import { nanoid } from "nanoid";
+
+import db from "../config/db.js";
+import InvoiceModel from "../models/invoice.model.js";
+import { InvoiceInput,InvoiceItemInput } from "../types/invoice.types.js";
+import AppError from "../utils/appError.js";
+import { buildInvoiceHTML } from "../utils/buildInvoiceHtml.js";
+import generate from "./pdf.service.js";
 
 export default class InvoiceService {
   static async handleCreateInvoice(req: Request) {

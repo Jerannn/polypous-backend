@@ -1,7 +1,8 @@
 import { Request } from "express";
-import { PaymentInput } from "../types/payment.types.js";
-import PaymentModel from "../models/payment.model.js";
+
 import db from "../config/db.js";
+import PaymentModel from "../models/payment.model.js";
+import { PaymentInput } from "../types/payment.types.js";
 
 export default class PaymentService {
   static async handleCreatePayment(req: Request) {

@@ -1,20 +1,19 @@
-import express, { NextFunction, Request, Response } from "express";
-import morgan from "morgan";
-import helmet from "helmet";
 import cookieParser from "cookie-parser";
 import cors from "cors";
+import express, { NextFunction, Request, Response } from "express";
+import helmet from "helmet";
+import morgan from "morgan";
+
 import env from "./config/env.js";
-
-// Routes
-import authRouter from "./routes/auth.route.js";
-import dashboardRouter from "./routes/dashboard.route.js";
-import userRouter from "./routes/user.route.js";
-import clientRouter from "./routes/client.route.js";
-import invoiceRouter from "./routes/invoice.route.js";
-import paymentRouter from "./routes/payment.route.js";
-
 // Error handler
 import globalErrorHandler from "./controllers/error.controller.js";
+// Routes
+import authRouter from "./routes/auth.route.js";
+import clientRouter from "./routes/client.route.js";
+import dashboardRouter from "./routes/dashboard.route.js";
+import invoiceRouter from "./routes/invoice.route.js";
+import paymentRouter from "./routes/payment.route.js";
+import userRouter from "./routes/user.route.js";
 import AppError from "./utils/appError.js";
 // import { globalLimiter } from "./middleware/rate-limiter.middleware.js";
 

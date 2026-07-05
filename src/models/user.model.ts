@@ -1,7 +1,8 @@
 import camelcaseKeys from "camelcase-keys";
+
 import db from "../config/db.js";
-import { Business, BusinessInput, ProfileInput } from "../types/user.types.js";
 import { UserWithoutSensitive } from "../types/auth.types.js";
+import { Business, BusinessInput, ProfileInput } from "../types/user.types.js";
 
 export default class UserModel {
   static async updateById(userId: string, payload: ProfileInput): Promise<UserWithoutSensitive> {
