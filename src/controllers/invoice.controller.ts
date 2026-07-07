@@ -1,4 +1,4 @@
-import { NextFunction, Request,Response } from "express";
+import { NextFunction, Request, Response } from "express";
 
 import InvoiceService from "../services/invoice.service.js";
 import catchAsync from "../utils/catchAsync.js";
@@ -60,8 +60,10 @@ export const downloadInvoicePDF = catchAsync(
     const { pdf, filename } = await InvoiceService.handleDownloadInvoicePDF(
       req.params.id as string
     );
+
     res.setHeader("Content-Type", "application/pdf");
     res.setHeader("Content-Disposition", `attachment; filename=${filename}`);
+
     res.send(pdf);
   }
 );

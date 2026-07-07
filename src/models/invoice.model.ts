@@ -114,6 +114,7 @@ export default class InvoiceModel {
           COALESCE(client, null) AS client,
           COALESCE(items, '[]') AS items,
           COALESCE(payment_data, '[]') AS payments,
+          (SELECT currency FROM users WHERE id = inv.user_id) AS currency,
           inv.created_at,
           inv.updated_at
 
