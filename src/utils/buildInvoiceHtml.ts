@@ -69,7 +69,7 @@ export function buildInvoiceHTML(invoice: InvoiceWithItemsAndClient) {
 
         <!-- Invoice styling -->
         <style>
-          @import url("https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap");
+          @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+JP:wght@400;500;700&display=swap');
 
           @page {
             size: A4;
@@ -83,7 +83,7 @@ export function buildInvoiceHTML(invoice: InvoiceWithItemsAndClient) {
           }
 
           body {
-            font-family: "Inter", sans-serif;
+            font-family: "Inter", "Noto Sans", "Noto Sans JP", Arial, sans-serif;
             font-size: 13px;
             color: #1a3a31;
             background-color: #fff;
