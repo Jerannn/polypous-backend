@@ -279,4 +279,18 @@ export default class InvoiceModel {
 
     return camelcaseKeys(rows[0]);
   }
+
+  static async markOverdueInvoices() {
+    const result = await db.query(
+      `
+  UPDATE invoices
+  SET status = 'OVERDUE'
+  WHERE due_date < CURRENT_DATE
+    AND status = 'UNPAID'
+  `,
+      []
+    );
+
+    console.log(`Updated ${result.rowCount} overdue invoices.`);
+  }
 }
