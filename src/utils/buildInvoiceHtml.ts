@@ -1,15 +1,5 @@
 import { InvoiceWithItemsAndClient } from "../types/invoice.types.js";
 
-function formatDate(date: Date | string) {
-  if (!date) return "";
-  const d = new Date(date);
-  return d.toLocaleDateString("en-US", {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-  });
-}
-
 const CURRENCIES = [
   { code: "PHP", locale: "en-PH", symbol: "₱", name: "Philippine Peso" },
   { code: "USD", locale: "en-US", symbol: "$", name: "US Dollar" },
@@ -30,6 +20,16 @@ const CURRENCIES = [
   { code: "NOK", locale: "nb-NO", symbol: "kr", name: "Norwegian Krone" },
   { code: "DKK", locale: "da-DK", symbol: "kr", name: "Danish Krone" },
 ];
+
+function formatDate(date: Date | string) {
+  if (!date) return "";
+  const d = new Date(date);
+  return d.toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+  });
+}
 
 function formatCurrency(amount: number, currencyCode: string) {
   const currencyConfig = CURRENCIES.find((currency) => currency.code === currencyCode);
@@ -239,7 +239,7 @@ export function buildInvoiceHTML(invoice: InvoiceWithItemsAndClient) {
           </section>
 
           <section>
-            <h2 style="font-size: 15px; margin-top: 2rem">Notes and Terms</h2>
+            <h2 style="font-size: 15px; margin-top: 2rem">Notes & Terms</h2>
             <p>
               ${invoice.notes}
             </p>
