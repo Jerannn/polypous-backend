@@ -51,8 +51,8 @@ export default class ClientModel {
               )
             ) AS invoices_history
           FROM invoices
-          GROUP BY client_id, created_at
-          ORDER BY created_at DESC
+          GROUP BY client_id
+          ORDER BY MAX(created_at) DESC
           LIMIT 5
         ) inv ON inv.client_id = c.id
         

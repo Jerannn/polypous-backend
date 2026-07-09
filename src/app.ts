@@ -14,6 +14,8 @@ import dashboardRouter from "./routes/dashboard.route.js";
 import invoiceRouter from "./routes/invoice.route.js";
 import paymentRouter from "./routes/payment.route.js";
 import userRouter from "./routes/user.route.js";
+import analyticsRouter from "./routes/analytics.route.js";
+
 import AppError from "./utils/appError.js";
 // import { globalLimiter } from "./middleware/rate-limiter.middleware.js";
 
@@ -47,6 +49,7 @@ app.use("/api/v1/users", userRouter);
 app.use("/api/v1/clients", clientRouter);
 app.use("/api/v1/invoices", invoiceRouter);
 app.use("/api/v1/payments", paymentRouter);
+app.use("/api/v1/analytics", analyticsRouter);
 
 // Route not found
 app.all(/.*/, (req: Request, res: Response, next: NextFunction) => {

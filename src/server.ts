@@ -8,10 +8,10 @@ process.on("uncaughtException", (err) => {
   process.exit(1);
 });
 
-startCronJobs();
 const port = env.PORT || 3000;
 const server = app.listen(port, async () => {
   console.log(`App running on port ${port}...`);
+  startCronJobs();
 });
 
 process.on("unhandledRejection", (err: Error) => {
