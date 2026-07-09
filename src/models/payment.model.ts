@@ -62,11 +62,12 @@ export default class PaymentModel {
       `
       UPDATE invoices
       SET status = 'PAID'
-      WHERE id = $1 AND (
-                      SELECT COALESCE(SUM(amount), 0)
-                      FROM payments
-                      WHERE invoice_id = $1
-                    ) >= total
+      WHERE id = $1 
+            AND (
+              SELECT COALESCE(SUM(amount), 0)
+              FROM payments
+              WHERE invoice_id = $1
+            ) >= total
       RETURNING *
       `,
       [invoiceId]

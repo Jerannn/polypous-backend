@@ -1,7 +1,7 @@
 import camelcaseKeys from "camelcase-keys";
 
 import db from "../config/db.js";
-import { InvoiceStatus, MonthlyIncome, RecentInvoice, Stats } from "../types/dashboard.types.js";
+import { RecentInvoice, Stats } from "../types/dashboard.types.js";
 
 export default class DashboardModel {
   static async getStats(userId: string): Promise<Stats> {
@@ -27,64 +27,21 @@ export default class DashboardModel {
 
     return camelcaseKeys(rows[0]);
   }
-  static async getMonthlyIncome(userId: string): Promise<MonthlyIncome[]> {
-    const { rows } = await db.query(
-      `
-        SELECT
-            COALESCE(
-              JSON_AGG(
-                JSON_BUILD_OBJECT(
-                  'month', month,
-                  'income', total
-                )
-              ),
-              '[]'::json
-            ) AS monthly_income
-        FROM
-            (
-                SELECT
-                    TO_CHAR(DATE_TRUNC('month', payment_date), 'Mon YYYY') AS month,
-                    SUM(amount) AS total
-                FROM payments
-                WHERE user_id = $1
-                GROUP BY DATE_TRUNC('month', payment_date)
-                ORDER BY DATE_TRUNC('month', payment_date) DESC
-                LIMIT 12
-            ) 
-        `,
-      [userId]
-    );
-
-    return camelcaseKeys(rows[0].monthly_income);
-  }
-  static async getInvoiceStatus(userId: string): Promise<InvoiceStatus[]> {
-    const { rows } = await db.query(
-      `
-        SELECT status, COALESCE(COUNT(*), 0) AS count
-        FROM invoices
-        WHERE user_id = $1
-        GROUP BY status
-        `,
-      [userId]
-    );
-
-    return camelcaseKeys(rows);
-  }
 
   static async getRecentInvoices(userId: string): Promise<RecentInvoice[]> {
     const { rows } = await db.query(
       `
         SELECT
-            id,
-            invoice_number,
-            status,
-            due_date,
-            total,
-            (
-                SELECT name
-                FROM clients
-                WHERE id = client_id
-            ) AS client_name
+          id,
+          invoice_number,
+          status,
+          due_date,
+          total,
+          (
+            SELECT name
+            FROM clients
+            WHERE id = client_id
+          ) AS client_name
         FROM invoices
         WHERE user_id = $1
         ORDER BY created_at DESC
