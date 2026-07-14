@@ -6,10 +6,11 @@ import {
   downloadInvoicePDF,
   getInvoice,
   getInvoices,
+  markOverdueInvoices,
   updateInvoice,
 } from "../controllers/invoice.controller.js";
 import { protect } from "../middlewares/auth.middleware.js";
-import { apiLimiter } from "../middlewares/rate-limiter.middleware.js";
+import { apiLimiter, sensitiveLimiter } from "../middlewares/rate-limiter.middleware.js";
 import { validateRequest } from "../middlewares/validate.request.middleware.js";
 import {
   invoiceIdParamsSchema,
@@ -47,5 +48,7 @@ router.delete(
 );
 
 router.get("/:id/pdf", protect, apiLimiter, downloadInvoicePDF);
+
+router.get("/cron/mark-overdue", protect, sensitiveLimiter, markOverdueInvoices);
 
 export default router;

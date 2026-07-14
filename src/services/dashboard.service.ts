@@ -5,8 +5,8 @@ export default class DashboardService {
   static async getOverview(userId: string) {
     const [stats, monthlyIncome, invoiceStatus, recentInvoices] = await Promise.all([
       DashboardModel.getStats(userId),
-      AnalyticsModel.getMonthlyIncome(userId),
-      AnalyticsModel.getInvoiceStatus(userId),
+      DashboardModel.getMonthlyIncome(userId),
+      DashboardModel.getInvoiceStatus(userId),
       DashboardModel.getRecentInvoices(userId),
     ]);
 
