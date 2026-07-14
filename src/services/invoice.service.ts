@@ -6,7 +6,7 @@ import { nanoid } from "nanoid";
 
 import db from "../config/db.js";
 import InvoiceModel from "../models/invoice.model.js";
-import { InvoiceInput,InvoiceItemInput } from "../types/invoice.types.js";
+import { InvoiceInput, InvoiceItemInput } from "../types/invoice.types.js";
 import AppError from "../utils/appError.js";
 import { buildInvoiceHTML } from "../utils/buildInvoiceHtml.js";
 import generate from "./pdf.service.js";
@@ -180,5 +180,9 @@ export default class InvoiceService {
     const pdf = await generate(html);
 
     return { pdf, filename: `invoice-${invoice.invoiceNumber}.pdf` };
+  }
+
+  static async handleMarkOverdueInvoices() {
+    await InvoiceModel.markOverdueInvoices();
   }
 }

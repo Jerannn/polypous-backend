@@ -67,3 +67,13 @@ export const downloadInvoicePDF = catchAsync(
     res.send(pdf);
   }
 );
+
+export const markOverdueInvoices = catchAsync(
+  async (req: Request, res: Response, _next: NextFunction) => {
+    await InvoiceService.handleMarkOverdueInvoices();
+
+    res.status(HTTP_STATUS.OK).json({
+      status: "success",
+    });
+  }
+);

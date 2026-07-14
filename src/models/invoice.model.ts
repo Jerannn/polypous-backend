@@ -283,11 +283,11 @@ export default class InvoiceModel {
   static async markOverdueInvoices() {
     const result = await db.query(
       `
-  UPDATE invoices
-  SET status = 'OVERDUE'
-  WHERE due_date < CURRENT_DATE
-    AND status = 'UNPAID'
-  `,
+      UPDATE invoices
+      SET status = 'OVERDUE'
+      WHERE due_date < CURRENT_DATE
+        AND status = 'UNPAID'
+      `,
       []
     );
 
