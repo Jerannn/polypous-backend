@@ -15,9 +15,11 @@ export type InvoiceStatus = {
 };
 
 type StatValues = {
+  total: number;
   current: number;
   previous: number;
   growth: number;
+  period: string;
 };
 
 export type Stats = {

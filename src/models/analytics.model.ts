@@ -14,90 +14,259 @@ export default class AnalyticsModel {
   static async getStats(userId: string, query: AnalyticsFilter): Promise<Stats> {
     const { from, to } = query;
 
+    let groupBy: "day" | "month" | "year" = "month";
+
+    if (from && to) {
+      const days = differenceInDays(to, from);
+      const months = differenceInMonths(to, from);
+
+      switch (true) {
+        case days <= 31:
+          groupBy = "day";
+          break;
+        case months <= 12:
+          groupBy = "month";
+          break;
+        default:
+          groupBy = "year";
+      }
+    }
+
     const { rows } = await db.query(
       `
         WITH 
-          revenue AS (
-            SELECT
-              COALESCE(SUM(amount), 0) AS total_revenue
-            FROM payments
-            WHERE user_id = $1
-              AND ($2::date IS NULL OR payment_date >= $2::date)
-              AND ($3::date IS NULL OR payment_date < $3::date + INTERVAL '1 day')
+          params AS ( 
+            SELECT 
+              $1::uuid AS user_id, 
+              $2::date AS from_date, 
+              $3::date AS to_date,
+              $4 AS group_by
           ),
 
-          outstanding AS (
+          ranges AS (
+            SELECT 
+              user_id,
+              group_by,
+              from_date, 
+              to_date
+
+            FROM params
+          ),
+
+          -- Revenue (START)
+          revenue_by_period AS (
+            SELECT
+              COALESCE(SUM(p.amount), 0) AS total_revenue,
+
+              CASE
+                WHEN r.group_by = 'day' THEN DATE_TRUNC('day', p.payment_date)
+                WHEN r.group_by = 'month' THEN DATE_TRUNC('month', p.payment_date)
+                ELSE DATE_TRUNC('year', p.payment_date)
+              END AS period_date
+              
+            FROM payments p
+            CROSS JOIN ranges r
+            WHERE p.user_id = r.user_id
+              AND (r.from_date::date IS NULL OR p.payment_date >= r.from_date::date)
+              AND (r.to_date::date IS NULL OR p.payment_date < r.to_date::date + INTERVAL '1 day')
+            GROUP BY period_date
+            ORDER BY period_date
+          ),
+
+          ranked_revenue AS (
+            SELECT
+              total_revenue,
+              ROW_NUMBER() OVER (ORDER BY period_date DESC) AS rn
+            FROM revenue_by_period
+          ),
+
+          summary_revenue AS (
+            SELECT
+              MAX(total_revenue) FILTER (WHERE rn = 1) AS current,
+              MAX(total_revenue) FILTER (WHERE rn = 2) AS previous
+            FROM ranked_revenue
+          ),
+          -- Revenue (END)
+
+          -- OUTSTANDING (START)
+          outstanding_by_period AS (
             SELECT
               COALESCE(
                 GREATEST(
-                  SUM(i.total - COALESCE(p.amount_paid, 0)), 
+                  SUM(i.total - COALESCE(p.amount_paid, 0)),
                   0
-                ), 
+                ),
                 0
-              ) AS outstanding
+              ) AS total_outstanding,
+
+              CASE
+                WHEN r.group_by = 'day' THEN DATE_TRUNC('day', i.issue_date)
+                WHEN r.group_by = 'month' THEN DATE_TRUNC('month', i.issue_date)
+                ELSE DATE_TRUNC('year', i.issue_date)
+              END AS period_date
+
             FROM invoices i
             LEFT JOIN (
-              SELECT 
+              SELECT
                 invoice_id,
                 SUM(amount) AS amount_paid
               FROM payments
               GROUP BY invoice_id
-            ) p ON i.id = p.invoice_id
-            WHERE i.user_id = $1
+            ) p
+            ON i.id = p.invoice_id
+            CROSS JOIN ranges r
+            WHERE i.user_id = r.user_id
               AND i.status = 'UNPAID'
-              AND ($2::date IS NULL OR issue_date >= $2::date)
-              AND ($3::date IS NULL OR issue_date < $3::date + INTERVAL '1 day')
+              AND (r.from_date::date IS NULL OR issue_date >= r.from_date::date)
+              AND (r.to_date::date IS NULL OR issue_date < r.to_date::date + INTERVAL '1 day')
+            GROUP BY period_date
+            ORDER BY period_date
           ),
 
-          clients AS (
+          ranked_outstanding AS (
             SELECT
-              COUNT(*) AS total_clients
-            FROM clients
-            WHERE user_id = $1
-              AND ($2::date IS NULL OR created_at >= $2::date)
-              AND ($3::date IS NULL OR created_at < $3::date + INTERVAL '1 day')
+              total_outstanding,
+              ROW_NUMBER() OVER (ORDER BY period_date DESC) AS rn
+            FROM outstanding_by_period
           ),
 
-          invoices AS (
+          summary_outstanding AS (
+            SELECT
+              MAX(total_outstanding) FILTER (WHERE rn = 1) AS current,
+              MAX(total_outstanding) FILTER (WHERE rn = 2) AS previous
+            FROM ranked_outstanding
+          ),
+          -- OUTSTANDING (END)
+
+          -- CLIENTS (START)
+          clients_by_period AS (
+            SELECT
+              COUNT(c.*) AS total_clients,
+
+              CASE
+                WHEN r.group_by = 'day' THEN DATE_TRUNC('day', c.created_at)
+                WHEN r.group_by = 'month' THEN DATE_TRUNC('month', c.created_at)
+                ELSE DATE_TRUNC('year', c.created_at)
+              END AS period_date
+
+            FROM clients c
+            CROSS JOIN ranges r
+            WHERE c.user_id = r.user_id
+              AND (r.from_date::date IS NULL OR created_at >= r.from_date::date)
+              AND (r.to_date::date IS NULL OR created_at < r.to_date::date + INTERVAL '1 day')
+            GROUP BY period_date
+            ORDER BY period_date
+          ),
+
+          ranked_clients AS (
+            SELECT
+              total_clients,
+              ROW_NUMBER() OVER (ORDER BY period_date DESC) AS rn
+            FROM clients_by_period
+          ),
+
+          summary_clients AS (
+            SELECT
+              MAX(total_clients) FILTER (WHERE rn = 1) AS current,
+              MAX(total_clients) FILTER (WHERE rn = 2) AS previous
+            FROM ranked_clients
+          ),
+          -- CLIENTS (END)
+
+          -- INVOICES (START)
+          invoices_by_period AS (
             SELECT 
-              COUNT (*) AS total_invoices
-            FROM invoices
-            WHERE user_id = $1
-              AND ($2::date IS NULL OR issue_date >= $2::date)
-              AND ($3::date IS NULL OR issue_date < $3::date + INTERVAL '1 day')
+              COUNT (i.*) AS total_invoices,
+
+              CASE
+                WHEN r.group_by = 'day' THEN DATE_TRUNC('day', i.issue_date)
+                WHEN r.group_by = 'month' THEN DATE_TRUNC('month', i.issue_date)
+                ELSE DATE_TRUNC('year', i.issue_date)
+              END AS period_date
+
+            FROM invoices i
+            CROSS JOIN ranges r
+            WHERE i.user_id = r.user_id
+              AND (r.from_date::date IS NULL OR issue_date >= r.from_date::date)
+              AND (r.to_date::date IS NULL OR issue_date < r.to_date::date + INTERVAL '1 day')
+            GROUP BY period_date
+            ORDER BY period_date
+          ),
+
+          ranked_invoices AS (
+            SELECT
+              total_invoices,
+              ROW_NUMBER() OVER (ORDER BY period_date DESC) AS rn
+            FROM invoices_by_period
+          ),
+
+          summary_invoices AS (
+            SELECT
+              MAX(total_invoices) FILTER (WHERE rn = 1) AS current,
+              MAX(total_invoices) FILTER (WHERE rn = 2) AS previous
+            FROM ranked_invoices
           )
+          -- INVOICES (END)
         
         SELECT 
-          JSON_BUILD_OBJECT(
-            'current', revenue.total_revenue,
-            'previous', '0',
-            'growth', '0'
-          ) AS revenue,
+          revenue,
+          outstanding,
+          clients,
+          invoices
 
-          JSON_BUILD_OBJECT(
-            'current', outstanding.outstanding,
-            'previous', '0',
-            'growth', '0'
-          ) AS outstanding,
+        FROM (
+          SELECT
+            JSON_BUILD_OBJECT(
+              'total', (SELECT SUM(total_revenue) FROM revenue_by_period),
+              'current', current,
+              'previous', previous,
+              'growth', ROUND(((current - previous) / NULLIF(previous,0))*100, 2),
+              'period', r.group_by
+            ) AS revenue
+          FROM summary_revenue
+          CROSS JOIN ranges r
+        ) revenue
 
+        CROSS JOIN (
+          SELECT
           JSON_BUILD_OBJECT(
-            'current', clients.total_clients,
-            'previous', '0',
-            'growth', '0'
-          ) AS clients,       
+            'total', (SELECT SUM(total_outstanding) FROM outstanding_by_period),
+            'current', current,
+            'previous', previous,
+            'growth', ROUND(((current - previous) / NULLIF(previous,0))*100, 2),
+            'period', r.group_by
+          ) AS outstanding
+          FROM summary_outstanding
+          CROSS JOIN ranges r
+        ) AS outstanding
 
+        CROSS JOIN (
+          SELECT
           JSON_BUILD_OBJECT(
-            'current', invoices.total_invoices,
-            'previous', '0',
-            'growth', '0'
+            'total', (SELECT SUM(total_clients) FROM clients_by_period),
+            'current', current,
+            'previous', previous,
+            'growth', current - NULLIF(previous,0),
+            'period', r.group_by
+          ) AS clients
+          FROM summary_clients
+          CROSS JOIN ranges r
+        ) AS clients
+
+        CROSS JOIN (
+          SELECT
+          JSON_BUILD_OBJECT(
+            'total', (SELECT SUM(total_invoices) FROM invoices_by_period),
+            'current', current,
+            'previous', previous,
+            'growth', current - NULLIF(previous,0),
+            'period', r.group_by
           ) AS invoices
-
-        FROM revenue
-        CROSS JOIN outstanding
-        CROSS JOIN clients
-        CROSS JOIN invoices
+          FROM summary_invoices
+          CROSS JOIN ranges r
+        ) AS invoices
         `,
-      [userId, from, to]
+      [userId, from, to, groupBy]
     );
 
     return camelcaseKeys(rows[0]);
