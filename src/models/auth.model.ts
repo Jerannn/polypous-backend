@@ -92,4 +92,14 @@ export default class AuthModel {
       [userId]
     );
   }
+
+  static async updatePassword(userId: string, hashedPassword: string) {
+    await db.query(
+      `
+      UPDATE users 
+      SET password_hash = $2
+      WHERE id = $1`,
+      [userId, hashedPassword]
+    );
+  }
 }

@@ -27,8 +27,8 @@ export const MESSAGES = {
 } as const;
 
 export const OTP = {
-  EXPIRATION_TIME: 2 * 60 * 1000, // 10 minutes
-  COOLDOWN_TIME: 2 * 60 * 1000, // 10 minutes
+  EXPIRATION_TIME: 2 * 60 * 1000, // 2 minutes
+  COOLDOWN_TIME: 2 * 60 * 1000, // 2 minutes
   MAX_OTP_RESEND_ATTEMPTS: 5,
   MAX_ATTEMPTS: 5,
   OTP_EXPIRATION_TIME: 2 * 60, // 2 minutes

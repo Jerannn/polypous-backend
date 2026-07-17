@@ -217,7 +217,7 @@ export default class AnalyticsModel {
         FROM (
           SELECT
             JSON_BUILD_OBJECT(
-              'total', (SELECT SUM(total_revenue) FROM revenue_by_period),
+              'total', (SELECT COALESCE(SUM(total_revenue), 0) FROM revenue_by_period),
               'current', current,
               'previous', previous,
               'growth', ROUND(((current - previous) / NULLIF(previous,0))*100, 2),
@@ -230,7 +230,7 @@ export default class AnalyticsModel {
         CROSS JOIN (
           SELECT
           JSON_BUILD_OBJECT(
-            'total', (SELECT SUM(total_outstanding) FROM outstanding_by_period),
+            'total', (SELECT COALESCE(SUM(total_outstanding), 0) FROM outstanding_by_period),
             'current', current,
             'previous', previous,
             'growth', ROUND(((current - previous) / NULLIF(previous,0))*100, 2),
@@ -243,7 +243,7 @@ export default class AnalyticsModel {
         CROSS JOIN (
           SELECT
           JSON_BUILD_OBJECT(
-            'total', (SELECT SUM(total_clients) FROM clients_by_period),
+            'total', (SELECT COALESCE(SUM(total_clients), 0) FROM clients_by_period),
             'current', current,
             'previous', previous,
             'growth', current - NULLIF(previous,0),
@@ -256,7 +256,7 @@ export default class AnalyticsModel {
         CROSS JOIN (
           SELECT
           JSON_BUILD_OBJECT(
-            'total', (SELECT SUM(total_invoices) FROM invoices_by_period),
+            'total', (SELECT COALESCE(SUM(total_invoices), 0) FROM invoices_by_period),
             'current', current,
             'previous', previous,
             'growth', current - NULLIF(previous,0),

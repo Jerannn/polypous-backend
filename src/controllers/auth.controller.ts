@@ -113,3 +113,36 @@ export const logout = catchAsync(async (req: Request, res: Response, _next: Next
     status: "success",
   });
 });
+
+export const forgotPassword = catchAsync(
+  async (req: Request, res: Response, _next: NextFunction) => {
+    const { email } = req.body;
+
+    await AuthService.handleForgotPassword(res, email);
+  }
+);
+
+export const verifyForgotPassword = catchAsync(
+  async (req: Request, res: Response, _next: NextFunction) => {
+    const { email, otp } = req.body;
+
+    const token = await AuthService.handleVerifyForgotPassword(email, otp);
+
+    res.status(HTTP_STATUS.OK).json({
+      status: "success",
+      data: { token },
+    });
+  }
+);
+
+export const resetPassword = catchAsync(
+  async (req: Request, res: Response, _next: NextFunction) => {
+    const { newPassword, email, token } = req.body;
+
+    await AuthService.handleResetPassword(email, newPassword, token);
+
+    res.status(HTTP_STATUS.OK).json({
+      status: "success",
+    });
+  }
+);

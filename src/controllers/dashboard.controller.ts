@@ -1,4 +1,4 @@
-import { NextFunction, Request,Response } from "express";
+import { NextFunction, Request, Response } from "express";
 
 import DashboardService from "../services/dashboard.service.js";
 import catchAsync from "../utils/catchAsync.js";
