@@ -53,10 +53,9 @@ export class OTPService {
       });
     }
 
-    // OTP is single-use → remove after successful verification
+    // remove after successful verification
     await redis.del(key);
 
-    console.log("REGISTRATION OTP: ", storeOtp);
     return storeOtp;
   }
 

@@ -1,3 +1,4 @@
+import { Response } from "express";
 import env from "../config/env.js";
 import redis from "../lib/redis/redis.client.js";
 import { redisKeys } from "../lib/redis/redis.keys.js";
@@ -6,6 +7,8 @@ import { Register, User } from "../types/auth.types.js";
 import AppError from "../utils/appError.js";
 import { HTTP_STATUS, MESSAGES, OTP } from "../utils/constants.js";
 import { generateOTP, hashSecret, verifySecret, verifyToken } from "../utils/helper.js";
+import { OTPService } from "./otp.service.js";
+import { randomBytes } from "node:crypto";
 
 export default class AuthService {
   static async createAccount(data: Register): Promise<User> {
@@ -78,78 +81,85 @@ export default class AuthService {
     await AuthModel.removeRefreshToken(payload.userId);
   }
 
-  //   static async requestPasswordReset(email: string, res: Response) {
-  //     const user = await Auth.findByEmail(email);
+  static async handleForgotPassword(res: Response, email: string) {
+    const user = await AuthModel.findByEmail(email);
 
-  //     // Prevent user enumeration
-  //     if (!user) {
-  //       return res.status(HTTP_STATUS.NO_CONTENT).send();
-  //     }
+    // Prevent user enumeration
+    if (!user) {
+      return res.status(HTTP_STATUS.OK).json({ status: "success" });
+    }
 
-  //     const key = redisKeys.otp("reset", email);
+    const key = redisKeys.otp("reset", email);
 
-  //     // Do not issue a new OTP if one is still valid
-  //     if (await redis.exists(key)) {
-  //       return res.status(HTTP_STATUS.NO_CONTENT).send();
-  //     }
-  //     const newOtp = generateOTP();
-  //     const hashedOtp = await hashSecret(newOtp);
-  //     console.log("OTP:", newOtp);
+    // Do not issue a new OTP if one is still valid
+    if (await redis.exists(key)) {
+      return res.status(HTTP_STATUS.OK).json({ status: "success" });
+    }
 
-  //     await Promise.all([
-  //       redis.hset(key, {
-  //         email: email,
-  //         otp: hashedOtp,
-  //         attempts: 0,
-  //       }),
-  //       redis.expire(key, OTP_EXPIRATION_TIME),
-  //     ]);
+    const newOtp = generateOTP();
+    const hashedOtp = await hashSecret(newOtp);
+    console.log("OTP:", newOtp);
 
-  //     // TODO: send OTP via email service
-  //     // 4. Send verification email
-  //     // await OTPService.handleEmail(user.email, newOtp);
-  //   }
+    await Promise.all([
+      redis.hset(key, {
+        email: email,
+        otp: hashedOtp,
+        attempts: 0,
+        expiresAt: new Date(Date.now() + OTP.EXPIRATION_TIME),
+      }),
+      redis.expire(key, OTP.EXPIRATION_TIME / 1000),
+    ]);
 
-  //   static async confirmPasswordResetOtp(email: string, otp: string): Promise<string> {
-  //     const success = await OTPService.verifyOtp(email, otp, "reset");
-  //     const rawToken = randomBytes(32).toString("hex");
-  //     const hashedToken = await hashSecret(rawToken);
+    // TODO: send OTP via email service
+    // 4. Send verification email
+    // await OTPService.handleEmail(user.email, newOtp);
 
-  //     await redis.set(redisKeys.resetToken(success.email), hashedToken, {
-  //       ex: RESET_TOKEN_EXPIRATION_TIME,
-  //     });
+    res.status(HTTP_STATUS.OK).json({
+      status: "success",
+      message: "OTP sent successfully",
+    });
+  }
 
-  //     return rawToken;
-  //   }
+  static async handleVerifyForgotPassword(email: string, otp: string): Promise<string> {
+    const success = await OTPService.verifyOtp(email, otp, "reset");
+    const rawToken = randomBytes(32).toString("hex");
+    const hashedToken = await hashSecret(rawToken);
 
-  //   static async completePasswordReset(email: string, password: string, token: string) {
-  //     const key = redisKeys.resetToken(email);
-  //     console.log({ email, password, token });
-  //     // Validate reset token (stored hashed in Redis, expires automatically)
-  //     const hashedToken = await redis.get<string>(key);
+    await redis.set(redisKeys.resetToken(success.email), hashedToken, {
+      ex: OTP.RESET_TOKEN_EXPIRATION_TIME,
+    });
 
-  //     if (!hashedToken || !(await verifySecret(token, hashedToken))) {
-  //       throw new AppError(MESSAGES.INVALID_OTP, HTTP_STATUS.BAD_REQUEST);
-  //     }
+    return rawToken;
+  }
 
-  //     const user = await Auth.findByEmail(email);
+  static async handleResetPassword(email: string, newPassword: string, token: string) {
+    const key = redisKeys.resetToken(email);
 
-  //     if (!user) {
-  //       throw new AppError(MESSAGES.USER_NOT_FOUND, HTTP_STATUS.NOT_FOUND);
-  //     }
+    // Validate reset token (stored hashed in Redis, expires automatically)
+    const hashedToken = await redis.get<string>(key);
 
-  //     // Prevent password reuse
-  //     const isSamePassword = await verifySecret(password, user.password_hash as string);
-  //     if (isSamePassword) {
-  //       throw new AppError(MESSAGES.PASSWORD_REUSE, HTTP_STATUS.BAD_REQUEST);
-  //     }
+    if (!hashedToken || !(await verifySecret(token, hashedToken))) {
+      throw new AppError(MESSAGES.INVALID_OTP, HTTP_STATUS.BAD_REQUEST);
+    }
 
-  //     const hashedPassword = await hashSecret(password);
-  //     await Auth.updatePassword(user.id, hashedPassword);
+    const user = await AuthModel.findByEmail(email);
 
-  //     // Invalidate token after successful use
-  //     await redis.del(key);
-  //   }
+    if (!user) {
+      throw new AppError(MESSAGES.USER_NOT_FOUND, HTTP_STATUS.NOT_FOUND);
+    }
+
+    // Prevent password reuse
+    const isSamePassword = await verifySecret(newPassword, user.passwordHash as string);
+    if (isSamePassword) {
+      throw new AppError(MESSAGES.PASSWORD_REUSE, HTTP_STATUS.BAD_REQUEST);
+    }
+
+    const hashedPassword = await hashSecret(newPassword);
+    await AuthModel.updatePassword(user.id, hashedPassword);
+
+    // Invalidate token after successful use
+    await redis.del(key);
+  }
 
   //   static async changePassword(
   //     currentPassword: string,
