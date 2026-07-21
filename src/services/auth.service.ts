@@ -8,7 +8,7 @@ import AppError from "../utils/appError.js";
 import { HTTP_STATUS, MESSAGES, OTP } from "../utils/constants.js";
 import { generateOTP, hashSecret, verifySecret, verifyToken } from "../utils/helper.js";
 import { OTPService } from "./otp.service.js";
-import { randomBytes } from "node:crypto";
+import { createHash, randomBytes } from "node:crypto";
 
 export default class AuthService {
   static async createAccount(data: Register): Promise<User> {
@@ -123,27 +123,30 @@ export default class AuthService {
   static async handleVerifyForgotPassword(email: string, otp: string): Promise<string> {
     const success = await OTPService.verifyOtp(email, otp, "reset");
     const rawToken = randomBytes(32).toString("hex");
-    const hashedToken = await hashSecret(rawToken);
+    const hashedToken = createHash("sha256").update(rawToken).digest("hex");
 
-    await redis.set(redisKeys.resetToken(success.email), hashedToken, {
+    const key = redisKeys.resetToken(hashedToken);
+
+    await redis.set(key, success.email, {
       ex: OTP.RESET_TOKEN_EXPIRATION_TIME,
     });
 
     return rawToken;
   }
 
-  static async handleResetPassword(email: string, newPassword: string, token: string) {
-    const key = redisKeys.resetToken(email);
+  static async handleResetPassword(newPassword: string, token: string) {
+    const hashedToken = createHash("sha256").update(token).digest("hex");
+    const key = redisKeys.resetToken(hashedToken);
 
     // Validate reset token (stored hashed in Redis, expires automatically)
-    const hashedToken = await redis.get<string>(key);
+    // const hashedToken = await redis.get<string>(key);
+    const email = await redis.get<string>(key);
 
-    if (!hashedToken || !(await verifySecret(token, hashedToken))) {
+    if (!email) {
       throw new AppError(MESSAGES.INVALID_OTP, HTTP_STATUS.BAD_REQUEST);
     }
 
     const user = await AuthModel.findByEmail(email);
-
     if (!user) {
       throw new AppError(MESSAGES.USER_NOT_FOUND, HTTP_STATUS.NOT_FOUND);
     }

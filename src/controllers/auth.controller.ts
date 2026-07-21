@@ -137,9 +137,9 @@ export const verifyForgotPassword = catchAsync(
 
 export const resetPassword = catchAsync(
   async (req: Request, res: Response, _next: NextFunction) => {
-    const { newPassword, email, token } = req.body;
+    const { newPassword, token } = req.body;
 
-    await AuthService.handleResetPassword(email, newPassword, token);
+    await AuthService.handleResetPassword(newPassword, token);
 
     res.status(HTTP_STATUS.OK).json({
       status: "success",
