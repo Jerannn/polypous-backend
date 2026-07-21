@@ -29,11 +29,8 @@ export const forgotPasswordSchema = z.object({
 
 export const resetPasswordSchema = z
   .object({
-    email: z
-      .email({ message: "Please enter a valid email address" })
-      .transform((val) => val.toLowerCase().trim()),
     newPassword: z.string().min(6, "Password must be at least 6 characters long"),
-    confirmNewPassword: z.string(),
+    confirmNewPassword: z.string().min(6, "Password must be at least 6 characters long"),
     token: z.string(),
   })
   .refine((data) => data.newPassword === data.confirmNewPassword, {

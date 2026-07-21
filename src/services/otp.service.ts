@@ -29,8 +29,8 @@ export class OTPService {
   //     });
   //   }
 
-  static async verifyOtp(email: string, otp: string, type: string) {
-    const key = redisKeys.otp(type, email);
+  static async verifyOtp(identifier: string, otp: string, type: string) {
+    const key = redisKeys.otp(type, identifier);
 
     const storeOtp = await redis.hgetall<VerificationPayload>(key);
 

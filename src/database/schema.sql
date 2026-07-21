@@ -60,26 +60,14 @@ CREATE TABLE IF NOT EXISTS users (
   email CITEXT NOT NULL UNIQUE,
   password_hash TEXT NOT NULL,
   currency CHAR(3) NOT NULL DEFAULT 'USD',
-
-  -- Optional profile fields
   avatar_url TEXT,
   public_id TEXT,
   timezone VARCHAR(100) DEFAULT 'UTC',
-
-  -- Email verification
   email_verified BOOLEAN NOT NULL DEFAULT FALSE,
   email_verified_at TIMESTAMPTZ,
-
-  -- Auth recovery
-  password_reset_token TEXT,
-  password_reset_expires_at TIMESTAMPTZ,
-
-  -- Account state
   is_active BOOLEAN NOT NULL DEFAULT TRUE,
   last_login_at TIMESTAMPTZ,
-
   refresh_token TEXT UNIQUE,
-
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
 
@@ -210,6 +198,8 @@ CREATE TABLE IF NOT EXISTS businesses (
   email CITEXT NOT NULL UNIQUE,
   phone VARCHAR(50) NOT NULL,
   address TEXT NOT NULL,
+  brand_url TEXT,
+  public_id TEXT,
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
   UNIQUE (user_id)
