@@ -1,16 +1,9 @@
--- =========================================
--- RESET DATABASE (DEV / STAGING ONLY)
--- =========================================
 
--- Drop tables in dependency order (REMOVE THIS IN PRODUCTION)
-DROP TABLE IF EXISTS audit_logs CASCADE;
-DROP TABLE IF EXISTS invoice_status_history CASCADE;
 DROP TABLE IF EXISTS payments CASCADE;
 DROP TABLE IF EXISTS invoice_items CASCADE;
 DROP TABLE IF EXISTS invoices CASCADE;
 DROP TABLE IF EXISTS clients CASCADE;
 DROP TABLE IF EXISTS subscriptions CASCADE;
-DROP TABLE IF EXISTS user_monthly_stats CASCADE;
 DROP TABLE IF EXISTS users CASCADE;
 
 -- Drop enums
@@ -201,7 +194,7 @@ CREATE TABLE IF NOT EXISTS businesses (
   brand_url TEXT,
   public_id TEXT,
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   UNIQUE (user_id)
 );
 
@@ -210,42 +203,6 @@ CREATE INDEX IF NOT EXISTS idx_business_user_id ON businesses(user_id);
 -- =========================================
 -- INVOICE STATUS HISTORY
 -- =========================================
-
-CREATE TABLE IF NOT EXISTS invoice_status_history (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-
-  invoice_id UUID NOT NULL REFERENCES invoices(id) ON DELETE CASCADE,
-
-  status invoice_status NOT NULL,
-
-  changed_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-);
-
-CREATE INDEX IF NOT EXISTS idx_invoice_status_history_invoice_id ON invoice_status_history(invoice_id);
-
--- =========================================
--- USER MONTHLY STATS
--- =========================================
-
-CREATE TABLE IF NOT EXISTS user_monthly_stats (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-
-  user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-
-  year INT NOT NULL,
-  month INT NOT NULL CHECK (month BETWEEN 1 AND 12),
-
-  total_income NUMERIC(12,2) NOT NULL DEFAULT 0,
-  total_invoices INT NOT NULL DEFAULT 0,
-  paid_invoices INT NOT NULL DEFAULT 0,
-  unpaid_invoices INT NOT NULL DEFAULT 0,
-
-  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-
-  UNIQUE(user_id, year, month)
-);
-
-CREATE INDEX IF NOT EXISTS idx_user_monthly_stats_user_id ON user_monthly_stats(user_id);
 
 -- =========================================
 -- SUBSCRIPTIONS
@@ -275,31 +232,6 @@ CREATE TABLE IF NOT EXISTS subscriptions (
 CREATE INDEX IF NOT EXISTS idx_subscriptions_user_id ON subscriptions(user_id);
 
 CREATE INDEX IF NOT EXISTS idx_subscriptions_status ON subscriptions(status);
-
--- =========================================
--- AUDIT LOGS
--- =========================================
--- Extremely useful in real SaaS apps
--- Tracks important user actions
-
-CREATE TABLE IF NOT EXISTS audit_logs (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-
-  user_id UUID REFERENCES users(id) ON DELETE SET NULL,
-
-  action VARCHAR(100) NOT NULL,
-
-  entity_type VARCHAR(100),
-  entity_id UUID,
-
-  metadata JSONB,
-
-  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-);
-
-CREATE INDEX IF NOT EXISTS idx_audit_logs_user_id ON audit_logs(user_id);
-
-CREATE INDEX IF NOT EXISTS idx_audit_logs_entity ON audit_logs(entity_type, entity_id);
 
 -- =========================================
 -- UPDATED_AT AUTO-UPDATE TRIGGER

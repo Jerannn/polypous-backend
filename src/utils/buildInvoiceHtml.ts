@@ -1,3 +1,6 @@
+import fs from "fs";
+import path from "path";
+
 import { InvoiceWithItemsAndClient } from "../types/invoice.types.js";
 
 const CURRENCIES = [
@@ -45,16 +48,6 @@ export function buildInvoiceHTML(invoice: InvoiceWithItemsAndClient) {
 
   const taxAmount = (Number(invoice.subtotal) * Number(invoice.tax)) / 100;
 
-  const amountPaid = invoice.payments
-    ? invoice.payments.reduce((acc, p) => acc + Number(p.amount), 0)
-    : 0;
-
-  const balance = Math.max(0, Number(invoice.total) - amountPaid);
-
-  const percentage =
-    Number(invoice.total) > 0 ? Math.min(100, (amountPaid / Number(invoice.total)) * 100) : 0;
-  const percentageStr = percentage.toFixed(2);
-
   return `
   <!doctype html>
     <html lang="en">
@@ -98,8 +91,6 @@ export function buildInvoiceHTML(invoice: InvoiceWithItemsAndClient) {
           style="
             max-width: 800px;
             margin: 0 auto;
-            /* border: 1px solid #000; */
-            /* padding: 1rem; */
           "
         >
           <header>
@@ -113,11 +104,7 @@ export function buildInvoiceHTML(invoice: InvoiceWithItemsAndClient) {
                 padding-bottom: 1rem;
               "
             >
-              <img
-                src="./src/assets/img/logo.svg"
-                alt="Logo"
-                style="width: 80px; height: 80px"
-              />
+              <h1 style="font-size: 20px; font-weight: bold; color: #1a3a31">${invoice.freelancer.name}</h1>
               <h1 style="font-size: 24px">Invoice</h1>
             </div>
 
