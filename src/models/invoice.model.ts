@@ -126,7 +126,8 @@ export default class InvoiceModel {
               'name', name,
               'email', email,
               'phone', phone,
-              'address', address
+              'address', address,
+              'brand_url', brand_url
             ) AS fl
           FROM businesses
           WHERE user_id = inv.user_id

@@ -1,3 +1,5 @@
+import { sendEmail } from "../lib/email/email.client.js";
+import { getOtpTemplate } from "../lib/email/email.templates.js";
 import redis from "../lib/redis/redis.client.js";
 import { redisKeys } from "../lib/redis/redis.keys.js";
 import AppError from "../utils/appError.js";
@@ -13,21 +15,21 @@ export type VerificationPayload = {
 };
 
 export class OTPService {
-  //   static async handleEmail(email: string, otp: string) {
-  //     const html = getOtpRegisterTemplate(otp);
+  static async handleEmail(email: string, otp: string, type: string) {
+    const html = getOtpTemplate(otp, type);
 
-  //     await sendEmail({
-  //       to: email,
-  //       subject: "Your Serenphéa verification code (expires in 15 minutes)",
-  //       text: `
-  //         Welcome to Serenphéa!
-  //         Your verification code is: ${otp}
-  //         This code will expire in 15 minutes.
-  //         For your security, do not share this code with anyone.
-  //         `,
-  //       html,
-  //     });
-  //   }
+    await sendEmail({
+      to: email,
+      subject: "Your Polypous verification code (expires in 15 minutes)",
+      text: `
+          Welcome to Polypous!
+          Your verification code is: ${otp}
+          This code will expire in 15 minutes.
+          For your security, do not share this code with anyone.
+          `,
+      html,
+    });
+  }
 
   static async verifyOtp(identifier: string, otp: string, type: string) {
     const key = redisKeys.otp(type, identifier);
@@ -81,24 +83,19 @@ export class OTPService {
       redis.expire(key, OTP.EXPIRATION_TIME / 1000),
     ]);
 
-    console.log("NEW OTP GENERATED:", newOtp);
-
-    // Email sending intentionally separated (can be plugged per provider later)
-    // if (type === "register") {
-    //   // 6. Send verification email
-    //   try {
-    //     await this.handleEmail(email, newOtp);
-    //   } catch (error) {
-    //     throw new AppError(MESSAGES.SERVER_ERROR, HTTP_STATUS.BAD_REQUEST);
-    //   }
-    // } else if (type === "reset") {
-    //   // 6. Send verification email
-    //   try {
-    //     await this.handleEmail(email, newOtp);
-    //   } catch (error) {
-    //     throw new AppError(MESSAGES.SERVER_ERROR, HTTP_STATUS.BAD_REQUEST);
-    //   }
-    // }
+    if (action === "register") {
+      try {
+        await this.handleEmail(email, newOtp, action);
+      } catch (error) {
+        throw new AppError(MESSAGES.SERVER_ERROR, HTTP_STATUS.BAD_REQUEST);
+      }
+    } else if (action === "reset") {
+      try {
+        await this.handleEmail(email, newOtp, action);
+      } catch (error) {
+        throw new AppError(MESSAGES.SERVER_ERROR, HTTP_STATUS.BAD_REQUEST);
+      }
+    }
 
     return this.getOtp(email, action);
   }

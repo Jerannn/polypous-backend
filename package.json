@@ -35,8 +35,9 @@
     "morgan": "^1.10.1",
     "multer": "^2.2.0",
     "nanoid": "^5.1.11",
+    "nodemailer": "^9.0.3",
     "pg": "^8.21.0",
-    "puppeteer": "^25.1.0",
+    "puppeteer": "^25.3.0",
     "zod": "^4.4.3"
   },
   "devDependencies": {
@@ -48,6 +49,7 @@
     "@types/morgan": "^1.9.10",
     "@types/multer": "^2.2.0",
     "@types/node": "^25.9.1",
+    "@types/nodemailer": "^8.0.1",
     "@types/pg": "^8.20.0",
     "eslint": "^10.4.0",
     "eslint-config-prettier": "^10.1.8",

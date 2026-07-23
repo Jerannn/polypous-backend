@@ -76,7 +76,7 @@ export const verifyRegistration = catchAsync(
 export const resendVerification = catchAsync(
   async (req: Request, res: Response, _next: NextFunction) => {
     const { email, action } = req.body;
-
+    console.log(email, action);
     const otp = await OTPService.resendOtp(email, action);
 
     res.status(HTTP_STATUS.OK).json({

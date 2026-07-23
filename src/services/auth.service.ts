@@ -19,8 +19,6 @@ export default class AuthService {
       throw new AppError(MESSAGES.REGISTRATION_FAILED, HTTP_STATUS.BAD_REQUEST);
     }
 
-    console.log("OTP:", newOtp);
-
     const key = redisKeys.otp("register", newUser.email);
     const hashedOtp = await hashSecret(newOtp);
 
@@ -34,9 +32,12 @@ export default class AuthService {
       redis.expire(key, OTP.EXPIRATION_TIME / 1000),
     ]);
 
-    // TODO: send OTP via email service
     // 4. Send verification email
-    //   await OTPService.handleEmail(newUser.email, newOtp);
+    try {
+      await OTPService.handleEmail(newUser.email, newOtp, "register");
+    } catch (error) {
+      throw new AppError(MESSAGES.REGISTRATION_FAILED, HTTP_STATUS.BAD_REQUEST);
+    }
 
     newUser.passwordHash = undefined;
 
@@ -98,7 +99,6 @@ export default class AuthService {
 
     const newOtp = generateOTP();
     const hashedOtp = await hashSecret(newOtp);
-    console.log("OTP:", newOtp);
 
     await Promise.all([
       redis.hset(key, {
@@ -110,9 +110,12 @@ export default class AuthService {
       redis.expire(key, OTP.EXPIRATION_TIME / 1000),
     ]);
 
-    // TODO: send OTP via email service
     // 4. Send verification email
-    // await OTPService.handleEmail(user.email, newOtp);
+    try {
+      await OTPService.handleEmail(user.email, newOtp, "reset");
+    } catch (error) {
+      throw new AppError(MESSAGES.REGISTRATION_FAILED, HTTP_STATUS.BAD_REQUEST);
+    }
 
     res.status(HTTP_STATUS.OK).json({
       status: "success",
