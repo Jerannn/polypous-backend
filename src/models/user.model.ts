@@ -45,7 +45,7 @@ export default class UserModel {
     return camelcaseKeys(rows[0]);
   }
 
-  static async getBusiness(userId: string): Promise<Business> {
+  static async getBusiness(userId: string): Promise<Business | null> {
     const { rows } = await db.query(
       `
       SELECT *
@@ -55,6 +55,41 @@ export default class UserModel {
       [userId]
     );
 
-    return rows[0];
+    return rows[0] ? camelcaseKeys(rows[0]) : null;
+  }
+
+  static async updateBusinessLogo(
+    userId: string,
+    brandUrl: string,
+    publicId: string
+  ): Promise<Business> {
+    const { rows } = await db.query(
+      `
+      UPDATE businesses
+      SET brand_url = $1,
+          public_id = $2
+      WHERE user_id = $3
+      RETURNING *
+      `,
+      [brandUrl, publicId, userId]
+    );
+
+    return camelcaseKeys(rows[0]);
+  }
+
+  static async deleteBusinessLogo(userId: string): Promise<Business> {
+    const { rows } = await db.query(
+      `
+      UPDATE businesses
+      SET brand_url = NULL,
+          public_id = NULL,
+          updated_at = NOW()
+      WHERE user_id = $1
+      RETURNING *
+      `,
+      [userId]
+    );
+
+    return camelcaseKeys(rows[0]);
   }
 }
