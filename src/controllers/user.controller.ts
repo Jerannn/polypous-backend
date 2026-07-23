@@ -69,3 +69,25 @@ export const deleteMe = catchAsync(async (req: Request, res: Response, _next: Ne
     status: "success",
   });
 });
+
+export const uploadBusinessLogo = catchAsync(
+  async (req: Request, res: Response, _next: NextFunction) => {
+    const updatedBusiness = await UserService.handleUploadBusinessLogo(req);
+
+    res.status(HTTP_STATUS.OK).json({
+      status: "success",
+      data: { business: updatedBusiness },
+    });
+  }
+);
+
+export const deleteBusinessLogo = catchAsync(
+  async (req: Request, res: Response, _next: NextFunction) => {
+    const updatedBusiness = await UserService.handleDeleteBusinessLogo(req);
+
+    res.status(HTTP_STATUS.OK).json({
+      status: "success",
+      data: { business: updatedBusiness },
+    });
+  }
+);
