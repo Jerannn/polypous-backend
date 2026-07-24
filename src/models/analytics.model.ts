@@ -12,7 +12,8 @@ import {
 
 export default class AnalyticsModel {
   static async getStats(userId: string, query: AnalyticsFilter): Promise<Stats> {
-    const { from, to } = query;
+    const from = query.from ? new Date(query.from).toLocaleDateString() : null;
+    const to = query.to ? new Date(query.to).toLocaleDateString() : null;
 
     let groupBy: "day" | "month" | "year" = "month";
 
@@ -273,7 +274,8 @@ export default class AnalyticsModel {
   }
 
   static async getIncomeTrend(userId: string, query: AnalyticsFilter): Promise<IncomeTrend[]> {
-    const { from, to } = query;
+    const from = query.from ? new Date(query.from).toLocaleDateString() : null;
+    const to = query.to ? new Date(query.to).toLocaleDateString() : null;
 
     let groupBy: "day" | "month" | "year" = "month";
 
@@ -327,7 +329,8 @@ export default class AnalyticsModel {
   }
 
   static async getInvoiceStatus(userId: string, query: AnalyticsFilter): Promise<InvoiceStatus[]> {
-    const { from, to } = query;
+    const from = query.from ? new Date(query.from).toLocaleDateString() : null;
+    const to = query.to ? new Date(query.to).toLocaleDateString() : null;
 
     const { rows } = await db.query(
       `
@@ -345,7 +348,8 @@ export default class AnalyticsModel {
   }
 
   static async getTopClients(userId: string, query: AnalyticsFilter): Promise<TopClient[]> {
-    const { from, to } = query;
+    const from = query.from ? new Date(query.from).toLocaleDateString() : null;
+    const to = query.to ? new Date(query.to).toLocaleDateString() : null;
 
     const { rows } = await db.query(
       `

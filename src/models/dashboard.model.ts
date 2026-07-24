@@ -69,11 +69,13 @@ export default class DashboardModel {
           FROM
             (
               SELECT
+                DATE_TRUNC('month', payment_date) AS month_date,
                 TO_CHAR(DATE_TRUNC('month', payment_date), 'Mon YYYY') AS month,
                 SUM(amount) AS total
               FROM payments
               WHERE user_id = $1
-              GROUP BY DATE_TRUNC('month', payment_date)
+              GROUP BY month_date
+              ORDER BY month_date DESC  
               LIMIT 12
             ) 
           `,
