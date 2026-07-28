@@ -12,7 +12,7 @@ export default class DashboardService {
 
     return {
       stats,
-      monthlyIncome,
+      monthlyIncome: monthlyIncome.reverse(),
       invoiceStatus,
       recentInvoices,
     };
